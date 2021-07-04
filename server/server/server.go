@@ -3,12 +3,8 @@ package server
 import (
 	"net/http"
 	"os"
-	"polaroid/config"
-	"polaroid/pk"
 	"strings"
-
-	"polaroid/types"
-
+	"github.com/iffigues/musicroom/config"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
 )
@@ -17,9 +13,14 @@ type HH interface {
 	WWW(*Server)
 }
 
+type Data struct {
+	Store *sessions.CookieStore
+	Conf  *config.Conf
+}
+
 type Server struct {
 	Router *mux.Router
-	Data   *types.Data
+	Data   *Data
 	Handle map[string]*Handle
 	Give   []HH
 }
@@ -40,5 +41,41 @@ func (s *Server) AddHH(p ...HH) {
 func (s *Server) StartHH() {
 	for _, val := range s.Give {
 		val.WWW(s)
+	}
+}
+
+func NewServer(i *config.Conf) (a *Server) {
+	router := mux.NewRouter()
+	router.StrictSlash(true)
+		return &Server{
+		Data: &Data{
+			Store: sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY"))),
+			Conf:  i,
+		},
+		Router: router,
+		Handle: make(map[string]*Handle),
+	}
+}
+
+func (r *Server) NewR(route, key string, method []string, handler http.Handler, i int) {
+	route = strings.ToLower(route)
+	r.Handle[key] = &Handle{Method: method, Route: route, Handle: handler, Role: i}
+}
+
+
+func (s *Server) Middleware(next http.Handler, a *Handle) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			next.ServeHTTP(w, r)
+	})
+}
+
+func (g *Server) Servers() (srv *http.Server) {
+	g.StartHH()
+	for _, h := range g.Handle {
+		g.Router.Handle(h.Route, g.Middleware(h.Handle, h)).Methods(h.Method...)
+	}
+	return &http.Server{
+		Addr:    g.Data.Conf.GetValue("http","socket").(string),
+		Handler: g.Router,
 	}
 }

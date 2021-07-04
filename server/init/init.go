@@ -18,7 +18,7 @@ func NewInit(path string) (i *Init, err error) {
 	return i, nil
 }
 
-func (i *Init) getKey(section , key string)(inu string){
+func (i *Init) GetKey(section , key string)(inu string){
 	ar,err:=  i.file.Section(section).GetKey(key)
 	if err != nil {
 		log.Panic(err)

@@ -45,3 +45,13 @@ func (c *Conf)AddState(types string, name string, value interface{}, o bool) (er
 	}
 	return errors.New("conf type don't exists")
 }
+
+func (c *Conf) GetValue(a string, key string) (cc interface{})  {
+	if z, ok := c.a[a]; ok {
+		if zz, yes := z[key]; yes {
+			return zz
+		}
+		return nil
+	}
+	return nil
+}
