@@ -13,9 +13,9 @@ type logs struct {
     Error *log.Logger
 }
 
-func NewLog() (a logs){
+func NewLog(aa string) (a logs){
 	var err error
-	a.file, err = os.OpenFile("music-rooms.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	a.file, err = os.OpenFile(aa, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
 		log.Fatal(err)
 	}

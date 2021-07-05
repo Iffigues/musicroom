@@ -10,8 +10,8 @@ import (
 
 func main() {
 
-	logs := logger.NewLog();
-	ini, err := inits.NewInit("./ini.ini")
+	logs := logger.NewLog("./log/music-room.log");
+	ini, err := inits.NewInit("./conf/ini.ini")
 
 	if err != nil {
 		log.Fatal(err);
