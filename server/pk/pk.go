@@ -2,15 +2,14 @@ package pk
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
-	"polaroid/config"
+	"github.com/iffigues/musicroom/config"
 	_ "github.com/lib/pq"
 )
 
 type Pk struct {
 	Host     string
-	Port     int
+	Port     string
 	User     string
 	Password string
 	Dbname   string
@@ -29,15 +28,11 @@ func NewPk(conf config.Conf) (a *Pk) {
 
 }
 
-func (a *pk) Init() {
-	db, err := sql.Open(sqls, user+password+client+charset)
-	if err != nil {
-		log.Fatal(err)
-	}
-	 if err  = db.Ping(); err != nil {
+func (a *Pk) Init(db *sql.DB) {
+	if err  := db.Ping(); err != nil {
 		 log.Fatal(err)
 	 }
-	_, err = db.Exec("CREATE DATABASE IF NOT EXISTS " + a.Dbname)
+	 _, err := db.Exec("CREATE DATABASE IF NOT EXISTS " + a.Dbname)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -55,16 +50,15 @@ func (a *Pk) IsUsers() (ok bool) {
 func (a *Pk) Starter() {
 
 	db, err := a.Connect()
-
 	if err != nil {
 		log.Fatal(err)
 	}
-
+	a.Init(db)
 	defer db.Close()
 }
 
 func (a *Pk) Connect() (db *sql.DB, err error) {
-	db, err := sql.Open(a.sqls, a.user+a.password+a.client+a.charset)
+	db, err = sql.Open("mysql", a.User+a.Password+"@/"+a.Dbname+"?charset=utf8mb4")
 	if err != nil {
 		return nil, err
 	}

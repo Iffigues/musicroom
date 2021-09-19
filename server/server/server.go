@@ -52,7 +52,7 @@ func NewServer(i *config.Conf) (a *Server) {
 		return &Server{
 		Data: &Data{
 			Store: sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY"))),
-			Bdd: NewPk(i);
+			Bdd: pk.NewPk(*i),
 			Conf:  i,
 		},
 		Router: router,
