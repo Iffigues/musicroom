@@ -14,13 +14,12 @@ func main() {
 	ini, err := inits.NewInit("./conf/ini.ini")
 
 	if err != nil {
-		log.Fatal(err);
+		logs.Fatal(err.Error());
 	}
 
 	conf := config.NewConf()
 	conf.NewConfType("http", true)
 	err = conf.AddState("http", "socket", ini.GetKey("http", "Socket"), true)
-
 	if err != nil {
 		log.Fatal(err);
 	}
@@ -28,6 +27,7 @@ func main() {
 	server := server.NewServer(conf)
 	serve := server.Servers();
 	err = serve.ListenAndServe()
+
 	if err != nil {
 		logs.Info.Println(err)
 	}

@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 	"github.com/iffigues/musicroom/config"
+	"github.com/iffigues/musicroom/pk"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
 )
@@ -15,6 +16,7 @@ type HH interface {
 
 type Data struct {
 	Store *sessions.CookieStore
+	Bdd  *pk.Pk
 	Conf  *config.Conf
 }
 
@@ -50,6 +52,7 @@ func NewServer(i *config.Conf) (a *Server) {
 		return &Server{
 		Data: &Data{
 			Store: sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY"))),
+			Bdd: NewPk(i);
 			Conf:  i,
 		},
 		Router: router,

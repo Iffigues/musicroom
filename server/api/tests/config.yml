@@ -1,0 +1,27 @@
+clusterid: "fr0"
+orgid: "wiserskills"
+areaid: "dev"
+instanceid: "5c780cac-c596-44ef-957e-24cd0eb67456"
+intranet: true
+server:
+  host: ":8088"
+  cors: ["*"]
+  origin: ["wiserskills.io"]
+  workers: 10
+  signingKey: aqze3245DERZ6E5
+database:
+  url: "http://localhost:8529"
+log:
+  level: "DEBUG"
+eventbus:
+  url: "nats://localhost:4222"
+  clustername: "wiserskills"
+smtp:
+  host: "localhost:25"
+cache:
+  url: "cproto://localhost:6534"
+s3:
+  endpoint: "mys3.com"
+  region: "eu-west"
+  accessKey: "s123"
+  secretKey: "secret"
