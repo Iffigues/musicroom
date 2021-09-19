@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"log"
 	"github.com/iffigues/musicroom/config"
-	_ "github.com/lib/pq"
+	_ "github.com/go-sql-driver/mysql"
 )
 
 type Pk struct {
@@ -16,24 +16,66 @@ type Pk struct {
 }
 
 func NewPk(conf config.Conf) (a *Pk) {
-	a = &Pk{
-		Host:     conf.GetValue("bdd", "host").(string),
-		Port:     conf.GetValue("bdd", "port").(string),
-		User:     conf.GetValue("bdd", "user").(string),
-		Password: conf.GetValue("bdd", "pwd").(string),
-		Dbname:   conf.GetValue("bdd", "dbname").(string),
+	a = &Pk{}
+	if Host := conf.GetValue("bdd", "host"); Host != nil {
+		a.Host = Host.(string)
+	} else {
 	}
+
+	if Port := conf.GetValue("bdd", "port"); Port != nil {
+		a.Port = Port.(string)
+	} else {
+	}
+
+	if  User := conf.GetValue("bdd", "user"); User != nil {
+		a.User = User.(string)
+	} else {
+	}
+
+	if Password := conf.GetValue("bdd", "pwd"); Password != nil {
+		a.Password = Password.(string)
+	} else {
+	}
+
+	if Dbname := conf.GetValue("bdd", "dbname"); Dbname != nil {
+		a.Dbname = Dbname.(string)
+	} else {
+	}
+
 	a.Starter()
 	return
 
 }
 
-func (a *Pk) Init(db *sql.DB) {
+func (a *Pk) Init() {
+	 db, err := sql.Open("mysql", a.User+":"+a.Password+"@tcp(127.0.0.1:3306)/")
+	if err != nil {
+	panic(err)
+	}
 	if err  := db.Ping(); err != nil {
 		 log.Fatal(err)
 	 }
-	 _, err := db.Exec("CREATE DATABASE IF NOT EXISTS " + a.Dbname)
+	 _, err = db.Exec("CREATE DATABASE IF NOT EXISTS " + a.Dbname)
 	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func (a *Pk) Tables(db *sql.DB) {
+	haversin := `CREATE FUNCTION haversine(
+			        lat1 FLOAT, lon1 FLOAT,
+			        lat2 FLOAT, lon2 FLOAT
+			     ) RETURNS FLOAT
+			    NO SQL DETERMINISTIC
+			BEGIN
+			    RETURN DEGREES(ACOS(
+					COS(RADIANS(lat1)) *
+				                  COS(RADIANS(lat2)) *
+				                  COS(RADIANS(lon2) - RADIANS(lon1)) +
+				                  SIN(RADIANS(lat1)) * SIN(RADIANS(lat2))
+				                ));
+			END`
+	if _, err := db.Exec(haversin); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -48,17 +90,17 @@ func (a *Pk) IsUsers() (ok bool) {
 }
 
 func (a *Pk) Starter() {
-
+	a.Init();
 	db, err := a.Connect()
 	if err != nil {
 		log.Fatal(err)
 	}
-	a.Init(db)
+	a.Tables(db)
 	defer db.Close()
 }
 
 func (a *Pk) Connect() (db *sql.DB, err error) {
-	db, err = sql.Open("mysql", a.User+a.Password+"@/"+a.Dbname+"?charset=utf8mb4")
+	db, err = sql.Open("mysql", a.User+":"+a.Password+"@/"+a.Dbname+"?charset=utf8mb4")
 	if err != nil {
 		return nil, err
 	}

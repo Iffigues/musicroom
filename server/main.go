@@ -19,15 +19,21 @@ func main() {
 
 	conf := config.NewConf()
 	conf.NewConfType("http", true)
+	conf.NewConfType("bdd", true)
+
 	err = conf.AddState("http", "socket", ini.GetKey("http", "Socket"), true)
+
 	if err != nil {
 		log.Fatal(err);
 	}
 
+	conf.AddState("bdd","host","localhost", true)
+	conf.AddState("bdd","user","root", true)
+	conf.AddState("bdd","pwd","Petassia01", true)
+	conf.AddState("bdd","dbname","musicroom", true)
 	server := server.NewServer(conf)
 	serve := server.Servers();
 	err = serve.ListenAndServe()
-
 	if err != nil {
 		logs.Info.Println(err)
 	}
