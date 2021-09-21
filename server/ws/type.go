@@ -6,7 +6,13 @@ import (
 )
 
 type Channel struct {
-	Chan map[string]*Hub
+	Chan map[string]*Mess
+}
+
+
+type Mess struct {
+	Hub *Hub
+	Client []*Client
 }
 
 type Hub struct {

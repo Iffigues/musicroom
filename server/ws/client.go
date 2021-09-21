@@ -3,6 +3,7 @@ package ws
 import (
 	"bytes"
 	"log"
+	"net/http"
 	"errors"
 	"time"
 	"github.com/gorilla/websocket"
@@ -78,18 +79,53 @@ func (c *Client) writePump() {
 	}
 }
 
-
+func NewHub()  (c *Hub) {
+	return &Hub{
+		broadcast:  make(chan []byte),
+		register:   make(chan *Client),
+		unregister: make(chan *Client),
+		clients:    make(map[*Client]bool),
+	}
+}
 
 func NewChannel() (c *Channel) {
 	c = new(Channel)
-	c.Chan = make(map[string]*Hub)
+	c.Chan = make(map[string]*Mess)
 	return
 }
 
-func (c *Channel)NewChanl(a string) (err error) {
+func (c *Channel)NewChan(a string) (err error) {
 	if _, ok := c.Chan[a]; ok {
 		return errors.New("chan already exists")
 	}
-	c.Chan[a] = nil;
+	var e *Mess
+	e.Hub = NewHub()
+	go e.Hub.run()
+	c.Chan[a] = e;
 	return
+}
+
+
+func (c *Channel) AddClient(a string, w http.ResponseWriter, r *http.Request) (err error){
+	if a, ok := c.Chan[a]; ok {
+	var upgrader = websocket.Upgrader{
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
+	}
+
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		return err
+	}
+
+	client := &Client{
+		conn: conn,
+		send: make(chan []byte, 256),
+	}
+	a.Hub.register <- client
+	go client.writePump()
+	go client.readPump()
+	return nil
+	}
+	return errors.New("don't exists")
 }
