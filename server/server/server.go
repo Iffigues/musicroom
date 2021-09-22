@@ -2,12 +2,14 @@ package server
 
 import (
 	"net/http"
-	"os"
 	"strings"
 	"github.com/iffigues/musicroom/config"
 	"github.com/iffigues/musicroom/pk"
-	"github.com/gorilla/mux"
-	"github.com/gorilla/sessions"
+	//"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
+	//"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
+	//"github.com/gorilla/sessions"
 )
 
 type HH interface {
@@ -15,13 +17,13 @@ type HH interface {
 }
 
 type Data struct {
-	Store *sessions.CookieStore
+	Store cookie.Store
 	Bdd  *pk.Pk
 	Conf  *config.Conf
 }
 
 type Server struct {
-	Router *mux.Router
+	Router *gin.Engine
 	Data   *Data
 	Handle map[string]*Handle
 	Give   []HH
@@ -47,11 +49,12 @@ func (s *Server) StartHH() {
 }
 
 func NewServer(i *config.Conf) (a *Server) {
-	router := mux.NewRouter()
-	router.StrictSlash(true)
-		return &Server{
+	//router := mux.NewRouter()
+	router := gin.Default()
+	//router.StrictSlash(true)
+	return &Server{
 		Data: &Data{
-			Store: sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY"))),
+			Store: cookie.NewStore([]byte("secret")),
 			Bdd: pk.NewPk(*i),
 			Conf:  i,
 		},
@@ -75,7 +78,8 @@ func (s *Server) Middleware(next http.Handler, a *Handle) http.Handler {
 func (g *Server) Servers() (srv *http.Server) {
 	g.StartHH()
 	for _, h := range g.Handle {
-		g.Router.Handle(h.Route, g.Middleware(h.Handle, h)).Methods(h.Method...)
+		print(h)
+		//g.Router.Handle(h.Route, g.Middleware(h.Handle, h)).Methods(h.Method...)
 	}
 	return &http.Server{
 		Addr:    g.Data.Conf.GetValue("http","socket").(string),
