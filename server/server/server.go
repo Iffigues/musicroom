@@ -1,6 +1,7 @@
 package server
 
 import (
+	"regexp"
 	"net/http"
 	"strings"
 	"github.com/iffigues/musicroom/config"
@@ -24,6 +25,7 @@ type Data struct {
 
 type Server struct {
 	Router *gin.Engine
+//	Router *gin.RouterGroup
 	Data   *Data
 	Handle map[string]*Handle
 	Give   []HH
@@ -32,8 +34,8 @@ type Server struct {
 type Handle struct {
 	Role   int
 	Route  string
-	Method []string
-	Handle http.Handler
+	Method string
+	Handle gin.HandlerFunc
 }
 
 func (s *Server) AddHH(p ...HH) {
@@ -63,7 +65,7 @@ func NewServer(i *config.Conf) (a *Server) {
 	}
 }
 
-func (r *Server) NewR(route, key string, method []string, handler http.Handler, i int) {
+func (r *Server) NewR(route, key string, method string, handler gin.HandlerFunc, i int) {
 	route = strings.ToLower(route)
 	r.Handle[key] = &Handle{Method: method, Route: route, Handle: handler, Role: i}
 }
@@ -75,10 +77,27 @@ func (s *Server) Middleware(next http.Handler, a *Handle) http.Handler {
 	})
 }
 
+
+func UserHandler(c *gin.Context) {
+    r, err := regexp.Compile(`[a-zA-Z0-9]`)
+    if err != nil {
+       panic(err)
+       return
+    }
+    username := c.Param("regex")
+    if r.MatchString(username) == true {
+        c.JSON(200,gin.H{"match":"true"})
+    } else {
+        c.JSON(400,gin.H{"match":"false"})
+    }
+}
+
 func (g *Server) Servers() (srv *http.Server) {
 	g.StartHH()
+	g.Router.GET("/users/:regex/lol",UserHandler)
 	for _, h := range g.Handle {
 		print(h)
+		g.Router.Handle(h.Method,h.Route, h.Handle)
 		//g.Router.Handle(h.Route, g.Middleware(h.Handle, h)).Methods(h.Method...)
 	}
 	return &http.Server{

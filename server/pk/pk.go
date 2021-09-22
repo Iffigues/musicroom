@@ -76,7 +76,6 @@ func (a *Pk) Tables(db *sql.DB) {
 				                ));
 			END`
 	if _, err := db.Exec(haversin); err != nil {
-		log.Fatal(err)
 	}
 }
 
