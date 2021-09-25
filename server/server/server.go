@@ -32,10 +32,11 @@ type Server struct {
 }
 
 type Handle struct {
-	Role   int
-	Route  string
-	Method string
-	Handle gin.HandlerFunc
+	Role	int
+	Route	string
+	Method	string
+	Handle	func () gin.HandlerFunc
+	Mi	[]func(c *gin.Context)
 }
 
 func (s *Server) AddHH(p ...HH) {
@@ -65,9 +66,9 @@ func NewServer(i *config.Conf) (a *Server) {
 	}
 }
 
-func (r *Server) NewR(route, key string, method string, handler gin.HandlerFunc, i int) {
+func (r *Server) NewR(route, key string, method string, handler func () gin.HandlerFunc , i int, mi []func(c *gin.Context)) {
 	route = strings.ToLower(route)
-	r.Handle[key] = &Handle{Method: method, Route: route, Handle: handler, Role: i}
+	r.Handle[key] = &Handle{Method: method, Route: route, Handle: handler, Role: i, Mi: mi}
 }
 
 
@@ -97,7 +98,10 @@ func (g *Server) Servers() (srv *http.Server) {
 	g.Router.GET("/users/:regex/lol",UserHandler)
 	for _, h := range g.Handle {
 		print(h)
-		g.Router.Handle(h.Method,h.Route, h.Handle)
+		mi := g.Router.Handle(h.Method,h.Route, h.Handle())
+		for _, v := range h.Mi {
+			mi.Use(v)
+		}
 		//g.Router.Handle(h.Route, g.Middleware(h.Handle, h)).Methods(h.Method...)
 	}
 	return &http.Server{
