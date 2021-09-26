@@ -6,10 +6,10 @@ import (
 )
 
 type User struct {
-	email	string `json:"email"`
-	password string `json:"pwd"`
-	types	bool
-	mailVerif bool
+	Email	string `json:"email"`
+	Password string `json:"pwd"`
+	Types	bool
+	MailVerif bool
 }
 
 func NewUser(s *server.Server) (u *User) {
@@ -19,10 +19,13 @@ func NewUser(s *server.Server) (u *User) {
 
 func (u *User)UserHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		var login User
+		c.BindJSON(&login)
+		login.Types = true
 		c.JSON(200, gin.H{"status": "OK"})
 	}
 }
 
 func (u *User) WWW(s *server.Server) {
-	s.NewR("/user/login", "user", "GET", u.UserHandler, 1,  nil)
+	s.NewR("/user/login", "user", "POST", u.UserHandler, 1,  nil)
 }

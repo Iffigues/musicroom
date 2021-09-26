@@ -6,11 +6,10 @@ import (
 	"strings"
 	"github.com/iffigues/musicroom/config"
 	"github.com/iffigues/musicroom/pk"
-	//"github.com/gorilla/mux"
 	"github.com/gin-gonic/gin"
-	//"github.com/gin-contrib/sessions"
+	"os"
+	"io"
 	"github.com/gin-contrib/sessions/cookie"
-	//"github.com/gorilla/sessions"
 )
 
 type HH interface {
@@ -53,6 +52,9 @@ func (s *Server) StartHH() {
 
 func NewServer(i *config.Conf) (a *Server) {
 	//router := mux.NewRouter()
+	gin.DisableConsoleColor()
+	f, _ := os.Create("./log/gin.log")
+	gin.DefaultWriter = io.MultiWriter(f)
 	router := gin.Default()
 	//router.StrictSlash(true)
 	return &Server{
