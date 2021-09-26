@@ -51,12 +51,10 @@ func (s *Server) StartHH() {
 }
 
 func NewServer(i *config.Conf) (a *Server) {
-	//router := mux.NewRouter()
 	gin.DisableConsoleColor()
 	f, _ := os.Create("./log/gin.log")
 	gin.DefaultWriter = io.MultiWriter(f)
 	router := gin.Default()
-	//router.StrictSlash(true)
 	return &Server{
 		Data: &Data{
 			Store: cookie.NewStore([]byte("secret")),
@@ -97,14 +95,11 @@ func UserHandler(c *gin.Context) {
 
 func (g *Server) Servers() (srv *http.Server) {
 	g.StartHH()
-	g.Router.GET("/users/:regex/lol",UserHandler)
 	for _, h := range g.Handle {
-		print(h)
 		mi := g.Router.Handle(h.Method,h.Route, h.Handle())
 		for _, v := range h.Mi {
 			mi.Use(v)
 		}
-		//g.Router.Handle(h.Route, g.Middleware(h.Handle, h)).Methods(h.Method...)
 	}
 	return &http.Server{
 		Addr:    g.Data.Conf.GetValue("http","socket").(string),
