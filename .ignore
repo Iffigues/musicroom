@@ -1,0 +1,3 @@
+server/musicroom
+server/log/*
+server/go.*
