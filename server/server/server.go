@@ -34,7 +34,7 @@ type Handle struct {
 	Role	int
 	Route	string
 	Method	string
-	Handle	func () gin.HandlerFunc
+	Handle	func (c *gin.Context)
 	Mi	[]func(c *gin.Context)
 }
 
@@ -50,10 +50,37 @@ func (s *Server) StartHH() {
 	}
 }
 
-func NewServer(i *config.Conf) (a *Server) {
-	gin.DisableConsoleColor()
-	f, _ := os.Create("./log/gin.log")
+func GinConfig(i *config.Conf) {
+	DebugMode := "debug"
+	ReleaseMode := "release"
+	TestMode := "test"
+	var tt string
+	var ttt string
+	t := i.GetValue("gin", "mode")
+	if t == nil {
+		ttt = DebugMode
+	} else {
+		ttt = t.(string)
+	}
+	if DebugMode == ttt {
+		gin.SetMode(gin.DebugMode)
+		tt = "./log/gin-debug.log"
+	} else if ReleaseMode == ttt {
+		gin.SetMode(gin.ReleaseMode)
+		tt = "./log/gin-release.log"
+	} else if TestMode == ttt {
+		gin.SetMode(gin.TestMode)
+		tt = "./log/gin-test.log"
+	} else {
+		panic("gin mode unknown: " + tt + " (available mode: debug release test)")
+	}
+	gin.DisableConsoleColor();
+	f, _ := os.Create(tt)
 	gin.DefaultWriter = io.MultiWriter(f)
+}
+
+func NewServer(i *config.Conf) (a *Server) {
+	GinConfig(i)
 	router := gin.Default()
 	return &Server{
 		Data: &Data{
@@ -66,7 +93,7 @@ func NewServer(i *config.Conf) (a *Server) {
 	}
 }
 
-func (r *Server) NewR(route, key string, method string, handler func () gin.HandlerFunc , i int, mi []func(c *gin.Context)) {
+func (r *Server) NewR(route, key string, method string, handler func(c *gin.Context) , i int, mi []func(c *gin.Context)) {
 	route = strings.ToLower(route)
 	r.Handle[key] = &Handle{Method: method, Route: route, Handle: handler, Role: i, Mi: mi}
 }
@@ -96,7 +123,7 @@ func UserHandler(c *gin.Context) {
 func (g *Server) Servers() (srv *http.Server) {
 	g.StartHH()
 	for _, h := range g.Handle {
-		mi := g.Router.Handle(h.Method,h.Route, h.Handle())
+		mi := g.Router.Handle(h.Method,h.Route, h.Handle)
 		for _, v := range h.Mi {
 			mi.Use(v)
 		}

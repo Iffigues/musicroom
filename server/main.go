@@ -9,7 +9,6 @@ import (
 	"github.com/iffigues/musicroom/util"
 
 	"github.com/sevlyar/go-daemon"
-
 	"log"
 )
 
@@ -23,6 +22,7 @@ func serves() {
 	conf := config.NewConf()
 	conf.NewConfType("http", true)
 	conf.NewConfType("bdd", true)
+	conf.NewConfType("gin", true)
 	err = conf.AddState("http", "socket", ini.GetKey("http", "Socket"), true)
 	if err != nil {
 		log.Fatal(err)
@@ -31,6 +31,7 @@ func serves() {
 	conf.AddState("bdd", "user", "root", true)
 	conf.AddState("bdd", "pwd", "Petassia01", true)
 	conf.AddState("bdd", "dbname", "musicroom", true)
+	conf.AddState("gin", "mode", ini.GetKey("gin-mode", "mode"), true)
 	server := server.NewServer(conf)
 	user := user.NewUser(server)
 	server.AddHH(user)
