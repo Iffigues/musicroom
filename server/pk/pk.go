@@ -41,7 +41,6 @@ func NewPk(conf config.Conf) (a *Pk) {
 		a.Dbname = Dbname.(string)
 	} else {
 	}
-
 	a.Starter()
 	return
 
@@ -50,7 +49,7 @@ func NewPk(conf config.Conf) (a *Pk) {
 func (a *Pk) Init() {
 	 db, err := sql.Open("mysql", a.User+":"+a.Password+"@tcp(127.0.0.1:3306)/")
 	if err != nil {
-	panic(err)
+		log.Fatal(err)
 	}
 	if err  := db.Ping(); err != nil {
 		 log.Fatal(err)

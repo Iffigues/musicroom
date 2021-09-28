@@ -7,8 +7,9 @@ import (
 	"github.com/iffigues/musicroom/server"
 	"github.com/iffigues/musicroom/user"
 	"github.com/iffigues/musicroom/util"
-
+	"github.com/iffigues/musicroom/pk"
 	"github.com/sevlyar/go-daemon"
+	"os"
 	"log"
 )
 
@@ -40,6 +41,7 @@ func serves() {
 		logs.Fatal(err.Error())
 	}
 	conf := makeConf(ini)
+	pk.NewPk(*conf)
 	server := server.NewServer(conf)
 	user := user.NewUser(server)
 	server.AddHH(user)
@@ -51,6 +53,13 @@ func serves() {
 }
 
 func main() {
+	t := false
+	if len(os.Args) > 1 {
+		if os.Args[1] == "daemon" {
+			t = true
+		}
+	}
+	if t {
 	cntxt := &daemon.Context{
 		PidFileName: "./log/taskmaster.pid",
 		PidFilePerm: 0777,
@@ -67,5 +76,6 @@ func main() {
 		return
 	}
 	defer cntxt.Release()
+	}
 	serves()
 }
