@@ -12,18 +12,14 @@ import (
 	"log"
 )
 
-func serves() {
-	util.CreateDir("./log")
-	logs := logger.NewLog("./log/music-room.log")
-	ini, err := inits.NewInit("./conf/ini.ini")
-	if err != nil {
-		logs.Fatal(err.Error())
-	}
-	conf := config.NewConf()
+
+func makeConf(ini *inits.Init) (conf *config.Conf) {
+	conf = config.NewConf()
 	conf.NewConfType("http", true)
 	conf.NewConfType("bdd", true)
 	conf.NewConfType("gin", true)
-	err = conf.AddState("http", "socket", ini.GetKey("http", "Socket"), true)
+	conf.NewConfType("facebook", true)
+	err := conf.AddState("http", "socket", ini.GetKey("http", "Socket"), true)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -32,6 +28,18 @@ func serves() {
 	conf.AddState("bdd", "pwd", "Petassia01", true)
 	conf.AddState("bdd", "dbname", "musicroom", true)
 	conf.AddState("gin", "mode", ini.GetKey("gin-mode", "mode"), true)
+	conf.AddState("facebook","id", ini.GetKey("facebook","id"), true)
+	return conf
+}
+
+func serves() {
+	util.CreateDir("./log")
+	logs := logger.NewLog("./log/music-room.log")
+	ini, err := inits.NewInit("./conf/ini.ini")
+	if err != nil {
+		logs.Fatal(err.Error())
+	}
+	conf := makeConf(ini)
 	server := server.NewServer(conf)
 	user := user.NewUser(server)
 	server.AddHH(user)
