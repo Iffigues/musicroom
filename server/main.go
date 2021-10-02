@@ -21,13 +21,29 @@ func makeConf(ini *inits.Init) (conf *config.Conf) {
 	conf.NewConfType("gin", true)
 	conf.NewConfType("facebook", true)
 	err := conf.AddState("http", "socket", ini.GetKey("http", "Socket"), true)
+
 	if err != nil {
 		log.Fatal(err)
 	}
-	conf.AddState("bdd", "host", "localhost", true)
-	conf.AddState("bdd", "user", "root", true)
-	conf.AddState("bdd", "pwd", "Petassia01", true)
-	conf.AddState("bdd", "dbname", "musicroom", true)
+	err = conf.AddState("bdd", "host", ini.GetKey("bdd", "host"), true)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = conf.AddState("bdd", "user", ini.GetKey("bdd", "user"), true)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = conf.AddState("bdd", "pwd", ini.GetKey("bdd", "pwd"), true)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = conf.AddState("bdd", "dbname", ini.GetKey("bdd", "dbname"), true)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	conf.AddState("gin", "mode", ini.GetKey("gin-mode", "mode"), true)
 	conf.AddState("facebook","id", ini.GetKey("facebook","id"), true)
 	return conf
