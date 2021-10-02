@@ -10,6 +10,7 @@ type User struct {
 	Email	string `json:"email"`
 	Password string `json:"pwd"`
 	Types	bool
+	Buy	bool   `json:"buy"`
 	MailVerif bool
 }
 

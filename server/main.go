@@ -41,8 +41,9 @@ func serves() {
 		logs.Fatal(err.Error())
 	}
 	conf := makeConf(ini)
-	pk.NewPk(*conf)
+	ii := pk.NewPk(*conf)
 	server := server.NewServer(conf)
+	server.AddPk(ii)
 	user := user.NewUser(server)
 	server.AddHH(user)
 	serve := server.Servers()
@@ -55,8 +56,15 @@ func serves() {
 func main() {
 	t := false
 	if len(os.Args) > 1 {
-		if os.Args[1] == "daemon" {
+		if os.Args[1] ==  "reset" {
+			ini, _ := inits.NewInit("./conf/ini.ini")
+			conf := makeConf(ini)
+			pk.NewPk(*conf).Reset()
+			return
+		} else if os.Args[1] == "daemon" {
 			t = true
+		} else {
+			return
 		}
 	}
 	if t {

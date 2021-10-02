@@ -60,6 +60,9 @@ func (a *Pk) Init() {
 	}
 }
 
+func (a *Pk) Reset() {
+}
+
 func (a *Pk) Tables(db *sql.DB) {
 	haversin := `CREATE FUNCTION haversine(
 			        lat1 FLOAT, lon1 FLOAT,

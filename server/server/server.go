@@ -38,6 +38,10 @@ type Handle struct {
 	Mi	[]func(c *gin.Context)
 }
 
+func (s *Server) AddPk (a *pk.Pk) {
+	s.Data.Bdd = a
+}
+
 func (s *Server) AddHH(p ...HH) {
 	for _, val := range p {
 		s.Give = append(s.Give, val)
