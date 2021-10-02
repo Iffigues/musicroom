@@ -51,6 +51,7 @@ func (a *Pk) Init() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer db.Close()
 	if err  := db.Ping(); err != nil {
 		 log.Fatal(err)
 	 }
@@ -61,6 +62,16 @@ func (a *Pk) Init() {
 }
 
 func (a *Pk) Reset() {
+	o := "DROP DATABASE IF EXISTS musicroom;"
+	bdd, err := a.Connect()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer bdd.Close()
+	_, err = bdd.Query(o)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func (a *Pk) Tables(db *sql.DB) {
