@@ -3,18 +3,29 @@
 free loving radio station for phone
 
 **SEVER**
-
+----------------------------
 **CONFIGURATION**
 
 file configuration: ./conf/ini.ini
+-------------------------------
+
+**START**: ./musicroom (args)
+
+ ---------------------------- 
+**ARGS**:
+
+  
+  **no-args**: start server in main thread
+  
+  **daemon**: start daemon in daemon mod
+  
+  **reset**:  erase all bdd of musicroom
 
 
-**START**: ./musicroom <args>
+--------------------------
 
-**ARGs**
-**no-args**: start server in main thread
+**kill daemon**
   
-**daemon**: start daemon in daemon mod
-  
-**reset**:  erase all bdd of music romm
-  
+
+  ./server/kill.sh
+--------------------------
