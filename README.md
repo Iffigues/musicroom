@@ -3,15 +3,21 @@
 free loving radio station for phone
 
 **SEVER**
+
 ----------------------------
+
 **CONFIGURATION**
 
 file configuration: ./conf/ini.ini
+
 -------------------------------
 
-**START**: ./musicroom (args)
+**START**: 
 
- ---------------------------- 
+./musicroom (args)
+
+---------------------------- 
+
 **ARGS**:
 
   
@@ -27,5 +33,6 @@ file configuration: ./conf/ini.ini
 **kill daemon**
   
 
-  ./server/kill.sh
+./server/kill.sh
+
 --------------------------
