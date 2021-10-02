@@ -18,3 +18,7 @@ file configuration: ./conf/ini.ini
   
 **reset**:  erase all bdd of music romm
   
+**kill daemon**
+  
+
+  ./server/kill.sh
