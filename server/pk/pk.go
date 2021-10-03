@@ -13,6 +13,7 @@ type Pk struct {
 	User     string
 	Password string
 	Dbname   string
+	Buy	 bool
 }
 
 func NewPk(conf config.Conf) (a *Pk) {
@@ -90,6 +91,7 @@ func (a *Pk) Tables(db *sql.DB) {
 			END`
 	if _, err := db.Exec(haversin); err != nil {
 	}
+
 }
 
 func (a *Pk) IsUsers() (ok bool) {

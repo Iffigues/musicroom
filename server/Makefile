@@ -15,8 +15,6 @@ init:
 	$(GOGET)
 build:
 	$(GOFMT)
-	go mod init github.com/iffigues/musicroom
-	go mod tidy
 	$(GOGET)
 	$(GOBUILD)
 fmt:
