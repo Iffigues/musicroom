@@ -47,3 +47,16 @@ func (a *UserUtils) AddUser(u *User) (err error){
 	}
 	return nil
 }
+
+func (a *UserUtils) GetUser(u *User) (err error){
+	db, err := a.S.Data.Bdd.Connect()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	err = db.QueryRow("SELECT uuid, password, emailverif  FROM user WHERE email = ?", u.Email).Scan(&u.Uid, &u.Password, &u.MailVerif)
+	if err != nil {
+		return err
+	}
+	return nil
+}

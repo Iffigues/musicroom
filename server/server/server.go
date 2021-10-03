@@ -34,8 +34,7 @@ type Handle struct {
 	Role	int
 	Route	string
 	Method	string
-	Handle	func (c *gin.Context)
-	Mi	[]func(c *gin.Context)
+	Handle	[]gin.HandlerFunc
 }
 
 func (s *Server) AddPk (a *pk.Pk) {
@@ -97,9 +96,9 @@ func NewServer(i *config.Conf) (a *Server) {
 	}
 }
 
-func (r *Server) NewR(route, key string, method string, handler func(c *gin.Context) , i int, mi []func(c *gin.Context)) {
+func (r *Server) NewR(route, key string, method string,i int, handler []gin.HandlerFunc) {
 	route = strings.ToLower(route)
-	r.Handle[key] = &Handle{Method: method, Route: route, Handle: handler, Role: i, Mi: mi}
+	r.Handle[key] = &Handle{Method: method, Route: route, Handle: handler, Role: i}
 }
 
 
@@ -127,9 +126,11 @@ func UserHandler(c *gin.Context) {
 func (g *Server) Servers() (srv *http.Server) {
 	g.StartHH()
 	for _, h := range g.Handle {
-		mi := g.Router.Handle(h.Method,h.Route, h.Handle)
-		for _, v := range h.Mi {
-			mi.Use(v)
+		if h.Method == "GET" {
+			g.Router.GET(h.Route, h.Handle...)
+		}
+		if h.Method == "POST" {
+			g.Router.POST(h.Route, h.Handle...)
 		}
 	}
 	return &http.Server{

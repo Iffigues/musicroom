@@ -14,6 +14,7 @@ type UserUtils struct {
 
 type User struct {
 	Email	string `json:"email"`
+	Uid	string `json:"uuid"`
 	Password string `json:"pwd"`
 	Types	bool
 	Buy	bool   `json:"buy"`
@@ -38,6 +39,17 @@ func (u *UserUtils)UserHandler(c *gin.Context) {
 	c.JSON(200, gin.H{"status": "OK"})
 }
 
+func (u *UserUtils)GetUsers(c *gin.Context) {
+	var login User
+	c.BindJSON(&login)
+	if err := u.GetUser(&login); err != nil {
+		c.JSON(400, gin.H{"status": "bad"})
+		return
+	}
+	c.JSON(200, gin.H{"status": "OK"})
+}
+
 func (u *UserUtils) WWW(s *server.Server) {
-	s.NewR("/user/login", "user", "POST", u.UserHandler, 1,  nil)
+	s.NewR("/user/signin", "user", "POST", 1, []gin.HandlerFunc{u.UserHandler})
+	s.NewR("/user/signup", "users", "POST", 1, []gin.HandlerFunc{u.DummyMiddleware(), u.GetUsers})
 }
