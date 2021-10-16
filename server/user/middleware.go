@@ -1,16 +1,16 @@
 package user
 
 import(
-	"fmt"
+	"net/http"
 	"github.com/gin-gonic/gin"
 )
 
-func (u *UserUtils)DummyMiddleware() gin.HandlerFunc {
-  // Do some initialization logic here
-  // Foo()
-  return func(c *gin.Context) {
-	 fmt.Println("zzzz")
-	  c.Next()
-  }
-}
-
+func TokenAuthMiddleware(c *gin.Context) {
+     err := TokenValid(c.Request)
+     if err != nil {
+        c.JSON(http.StatusUnauthorized, err.Error())
+        c.Abort()
+        return
+     }
+     c.Next()
+ }

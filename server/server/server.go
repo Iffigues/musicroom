@@ -9,6 +9,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"os"
 	"io"
+	  "github.com/gin-contrib/sessions"
+
 	"github.com/gin-contrib/sessions/cookie"
 )
 
@@ -45,6 +47,10 @@ func (s *Server) AddHH(p ...HH) {
 	for _, val := range p {
 		s.Give = append(s.Give, val)
 	}
+}
+
+func (s *Server)MakeMe(a ...gin.HandlerFunc)(b []gin.HandlerFunc) {
+	return a
 }
 
 func (s *Server) StartHH() {
@@ -85,7 +91,7 @@ func GinConfig(i *config.Conf) {
 func NewServer(i *config.Conf) (a *Server) {
 	GinConfig(i)
 	router := gin.Default()
-	return &Server{
+	a = &Server{
 		Data: &Data{
 			Store: cookie.NewStore([]byte("secret")),
 			Bdd: pk.NewPk(*i),
@@ -94,6 +100,8 @@ func NewServer(i *config.Conf) (a *Server) {
 		Router: router,
 		Handle: make(map[string]*Handle),
 	}
+	router.Use(sessions.Sessions("mysession", a.Data.Store))
+	return
 }
 
 func (r *Server) NewR(route, key string, method string,i int, handler []gin.HandlerFunc) {

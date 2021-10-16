@@ -74,6 +74,9 @@ func serves() {
 	}
 }
 
+func init() {
+}
+
 func main() {
 	t := false
 	if len(os.Args) > 1 {
