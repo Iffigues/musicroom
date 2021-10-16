@@ -2,6 +2,7 @@ package user
 
 import (
 	"github.com/iffigues/musicroom/server"
+	"github.com/iffigues/musicroom/util"
 
 	"github.com/satori/go.uuid"
 	"github.com/gin-gonic/gin"
@@ -42,7 +43,7 @@ func NewUser(s *server.Server) (u *UserUtils) {
 		dsn = "localhost:6379"
 	}
 	client = redis.NewClient(&redis.Options{
-		Addr: dsn, //redis port
+		Addr: dsn, 
 	})
 	_, err := client.Ping().Result()
 	if err != nil {
@@ -99,8 +100,18 @@ func (u *UserUtils)DelUser(c *gin.Context) {
 	c.JSON(http.StatusOK, "Successfully logged out")
 }
 
+func (u *UserUtils)UserVerif(c *gin.Context) {
+    username := c.Param("token")
+    if util.IsValidUUID(username) == true {
+        c.JSON(200,gin.H{"match":"true"})
+    } else {
+        c.JSON(400,gin.H{"match":"false"})
+    }
+}
+
 func (u *UserUtils) WWW(s *server.Server) {
 	s.NewR("/user/signup", "user", "POST", 1, u.S.MakeMe(u.UserHandler))
 	s.NewR("/user/signin", "users", "POST", 1, u.S.MakeMe(u.GetUsers))
 	s.NewR("/user/signout","deluser", "GET", 1, u.S.MakeMe(TokenAuthMiddleware ,u.DelUser))
+	s.NewR("user/verif/:token", "verifuser", "GET", 1, u.S.MakeMe(u.UserVerif))
 }
