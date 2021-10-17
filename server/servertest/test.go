@@ -1,4 +1,4 @@
-package serverTest
+package servertest
 
 import (
 	"github.com/iffigues/musicroom/config"
@@ -8,8 +8,6 @@ import (
 	"github.com/iffigues/musicroom/user"
 	"github.com/iffigues/musicroom/util"
 	"github.com/iffigues/musicroom/pk"
-	"github.com/sevlyar/go-daemon"
-	"os"
 	"log"
 )
 

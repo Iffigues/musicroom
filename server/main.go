@@ -9,6 +9,7 @@ import (
 	"github.com/iffigues/musicroom/util"
 	"github.com/iffigues/musicroom/pk"
 	"github.com/sevlyar/go-daemon"
+	"github.com/iffigues/musicroom/servertest"
 	"os"
 	"log"
 )
