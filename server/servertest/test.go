@@ -5,7 +5,6 @@ import (
 	"github.com/iffigues/musicroom/init"
 	"github.com/iffigues/musicroom/logger"
 	"github.com/iffigues/musicroom/server"
-	"github.com/iffigues/musicroom/user"
 	"github.com/iffigues/musicroom/util"
 	"github.com/iffigues/musicroom/pk"
 	"log"
@@ -47,7 +46,7 @@ func makeConf(ini *inits.Init) (conf *config.Conf) {
 	return conf
 }
 
-func Serves() {
+func Serves()  (*server.Server) {
 	util.CreateDir("./logTest")
 	logs := logger.NewLog("./logTest/music-room-test.log")
 	ini, err := inits.NewInit("./conf/ini.ini")
@@ -58,12 +57,14 @@ func Serves() {
 	ii := pk.NewPk(*conf)
 	server := server.NewServer(conf)
 	server.AddPk(ii)
-	user := user.NewUser(server)
-	server.AddHH(user)
+	return server
+}
+
+func LanceServe(server *server.Server) {
 	serve := server.Servers()
-	err = serve.ListenAndServe()
+	err := serve.ListenAndServe()
 	if err != nil {
-		logs.Info.Println(err)
+		log.Fatal(err)
 	}
 }
 
