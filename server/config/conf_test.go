@@ -6,6 +6,7 @@ import (
 
 func TestHelloEmpty(t *testing.T) {
 	c := NewConf()
+	go serve()
 	err := c.NewConfType("test", false)
 	if err != nil {
 		t.Fatalf("err one")

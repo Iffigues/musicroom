@@ -1,0 +1,4 @@
+Fatal: 2021/10/17 18:45:32 log.go:31: open ./conf/ini.ini: no such file or directory
+Fatal: 2021/10/17 18:46:22 log.go:31: open ./conf/ini.ini: no such file or directory
+Fatal: 2021/10/17 18:48:20 log.go:31: open ./conf/ini.ini: no such file or directory
+Fatal: 2021/10/17 18:52:05 log.go:31: open ./conf/ini.ini: no such file or directory
