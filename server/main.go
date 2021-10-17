@@ -6,10 +6,9 @@ import (
 	"github.com/iffigues/musicroom/logger"
 	"github.com/iffigues/musicroom/pk"
 	"github.com/iffigues/musicroom/server"
-	"github.com/iffigues/musicroom/user"
 	"github.com/iffigues/musicroom/song"
+	"github.com/iffigues/musicroom/user"
 	"github.com/iffigues/musicroom/util"
-
 
 	"github.com/sevlyar/go-daemon"
 
