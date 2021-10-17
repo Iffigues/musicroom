@@ -20,6 +20,7 @@ func makeConf(ini *inits.Init) (conf *config.Conf) {
 	conf.NewConfType("bdd", true)
 	conf.NewConfType("gin", true)
 	conf.NewConfType("facebook", true)
+	conf.NewConfType("email", true)
 	err := conf.AddState("http", "socket", ini.GetKey("http", "Socket"), true)
 
 	if err != nil {
@@ -46,6 +47,12 @@ func makeConf(ini *inits.Init) (conf *config.Conf) {
 
 	conf.AddState("gin", "mode", ini.GetKey("gin-mode", "mode"), true)
 	conf.AddState("facebook","id", ini.GetKey("facebook","id"), true)
+	conf.AddState("email","user", ini.GetKey("email","user"), true)
+	conf.AddState("email","from", ini.GetKey("email","from"), true)
+	conf.AddState("email","smtphost", ini.GetKey("email","smtphost"), true)
+	conf.AddState("email","smtpport", ini.GetKey("email","smtpport"), true)
+	conf.AddState("email","pwd", ini.GetKey("email","pwd"), true)
+	conf.AddState("email","mime", ini.GetKey("email","mime"), true)
 	return conf
 }
 

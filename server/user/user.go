@@ -2,8 +2,10 @@ package user
 
 import (
 	"github.com/iffigues/musicroom/util"
-
+	"github.com/iffigues/musicroom/postmail"
+	"errors"
 	"log"
+	"fmt"
 )
 
 func (a *UserUtils) InitUser() {
@@ -37,6 +39,14 @@ func (a *UserUtils) InitUser() {
 	}
 }
 
+func (a *UserUtils) SendMail(u string) (err error) {
+	e := postmail.NewEmail(a.S.Data.Conf)
+	e.AddTos("denoyelle.boris@gmail.com")
+	fmt.Println(e.Html("./mailtemplate/register", u))
+	e.Auths()
+	return e.Send()
+}
+
 func (a *UserUtils) AddUser(u *User) (err error){
 	db, err := a.S.Data.Bdd.Connect()
 	if err != nil {
@@ -64,7 +74,7 @@ func (a *UserUtils) AddUser(u *User) (err error){
 	if err != nil {
 		return err
 	}
-	return nil
+	return a.SendMail(st)
 }
 
 func (a *UserUtils) GetUser(u *User) (err error){
@@ -79,3 +89,30 @@ func (a *UserUtils) GetUser(u *User) (err error){
 	}
 	return nil
 }
+
+func (a *UserUtils) GetUseriVerif(uid string) (err error){
+
+	db, err := a.S.Data.Bdd.Connect()
+
+	if err != nil {
+		return err
+	}
+
+	defer db.Close()
+
+	ee := ""
+
+	err = db.QueryRow("SELECT user_id, FROM verif_user WHERE uuid = ?", uid).Scan(&ee)
+
+	if err != nil {
+		return err
+	}
+
+	if ee == "" {
+		return errors.New("empty user")
+	}
+
+	_, err = db.Exec("UPDATE user SET email_verif = TRUE WHERE uuid = ?", ee)
+
+	return err
+ }
