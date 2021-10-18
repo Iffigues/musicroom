@@ -47,6 +47,7 @@ func makeConf(ini *inits.Init) (conf *config.Conf) {
 
 	conf.AddState("gin", "mode", ini.GetKey("gin-mode", "mode"), true)
 	conf.AddState("facebook","id", ini.GetKey("facebook","id"), true)
+	conf.AddState("facebook", "id", ini.GetKey("facebook", "key"), true)
 	conf.AddState("email","user", ini.GetKey("email","user"), true)
 	conf.AddState("email","from", ini.GetKey("email","from"), true)
 	conf.AddState("email","smtphost", ini.GetKey("email","smtphost"), true)
