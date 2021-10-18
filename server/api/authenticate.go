@@ -18,7 +18,7 @@ func (c *Client) SetState(state string) {
 
 // GetURL return the url to call for authenticate
 func (c *Client) GetURL() (url string) {
-	return c.Oauth.AuthCodeURL(C.State, c.AuthOpt...)
+	return c.Oauth.AuthCodeURL(c.State, c.AuthOpt...)
 
 }
 
