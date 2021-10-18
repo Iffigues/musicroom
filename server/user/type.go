@@ -116,7 +116,7 @@ func (u *UserUtils)DelUser(c *gin.Context) {
 func (u *UserUtils)UserVerif(c *gin.Context) {
 	username := c.Param("token")
 	if util.IsValidUUID(username) == true {
-		if err := u.GetUseriVerif(username); err != nil {
+		if err := u.GetUseriVerif(username); err == nil {
 			c.JSON(200,gin.H{"match":"true"})
 			return
 		}

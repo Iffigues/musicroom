@@ -5,7 +5,6 @@ import (
 	"github.com/iffigues/musicroom/postmail"
 	"errors"
 	"log"
-	"fmt"
 )
 
 func (a *UserUtils) InitUser() {
@@ -41,8 +40,8 @@ func (a *UserUtils) InitUser() {
 
 func (a *UserUtils) SendMail(u string) (err error) {
 	e := postmail.NewEmail(a.S.Data.Conf)
-	e.AddTos("denoyelle.boris@gmail.com")
-	fmt.Println(e.Html("./mailtemplate/register", u))
+	e.AddTos("42projectmr@gmail.com")
+	e.Html("./mailtemplate/register", "http://gopiko.fr:9000/user/verif/" + u)
 	e.Auths()
 	return e.Send()
 }
@@ -92,27 +91,34 @@ func (a *UserUtils) GetUser(u *User) (err error){
 
 func (a *UserUtils) GetUseriVerif(uid string) (err error){
 
+	println(uid)
+
 	db, err := a.S.Data.Bdd.Connect()
 
 	if err != nil {
 		return err
 	}
-
+	println("zaza")
 	defer db.Close()
 
 	ee := ""
 
-	err = db.QueryRow("SELECT user_id, FROM verif_user WHERE uuid = ?", uid).Scan(&ee)
+	err = db.QueryRow("SELECT user_id FROM verif_user WHERE uuid = ?", uid).Scan(&ee)
+	if err != nil {
+		return err
+	}
+	println("ezezez")
+	if ee == "" {
+		return errors.New("empty user")
+	}
+	println("eee")
+	_, err = db.Exec("UPDATE user SET email_verif = TRUE WHERE uuid = ?", ee)
 
 	if err != nil {
 		return err
 	}
 
-	if ee == "" {
-		return errors.New("empty user")
-	}
-
-	_, err = db.Exec("UPDATE user SET email_verif = TRUE WHERE uuid = ?", ee)
-
+	_,err = db.Exec("DELETE FROM verif_user WHERE uuid = ?", uid)
+	print(uid)
 	return err
  }

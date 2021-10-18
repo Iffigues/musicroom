@@ -90,6 +90,6 @@ func (e *Email) Html(path string, Data interface{}) (err error){
 
 func (e *Email) Send() error {
 	println(e.Mime)
-	message := []byte("Subject: " + e.User + "!\n" + "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n" + e.Message)
+	message := []byte("Subject: musicroom!\n" + "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n" + e.Message)
 	return smtp.SendMail(e.SmtpHost+":"+e.SmtpPort, e.Auth, e.From, e.To, message)
 }
