@@ -4,7 +4,6 @@ import (
 	"github.com/iffigues/musicroom/server"
 	"github.com/iffigues/musicroom/util"
 	"github.com/iffigues/musicroom/regex"
-	"github.com/iffigues/musicroom/api"
 
 	"github.com/satori/go.uuid"
 	"github.com/gin-gonic/gin"
@@ -127,21 +126,7 @@ func (u *UserUtils)UserVerif(c *gin.Context) {
 }
 
 func (u *UserUtils) Get42(c *gin.Context) {
-	ap := &api.Config{
-		Host:  "https://api.insee.fr/",
-		Oauth: api.Oauth{},
-		Headers: map[string]string{
-			"grant_type": "client_credentials",
-		},
-	}
-	ap.Oauth.ClientID = "86023b24c48480f95e5b24b5a0d90939815fe16781adea9eb04ab34d3537b026"
-	ap.Oauth.TokenURL = "https://api.intra.42.fr/oauth/token"
-	ap.Oauth.AuthURL = "https://api.intra.42.fr/oauth/authorize"
-	ap.Oauth.AuthParam = map[string]string{
-		"grant_type": "client_credentials",
-	}
-	ap.Oauth.RedirectURL = "http://gopiko.fr:9000/user/token"
-	cc, err := ap.NewClient()
+	cc, err := u.S.Data.Api["42"].NewClient()
 	if err != nil {
 		log.Fatal(err)
 	}

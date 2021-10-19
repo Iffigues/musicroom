@@ -7,6 +7,7 @@ import (
 	"github.com/iffigues/musicroom/config"
 	"github.com/iffigues/musicroom/pk"
 	"github.com/gin-gonic/gin"
+	"github.com/iffigues/musicroom/api"
 	"os"
 	"io"
 	  "github.com/gin-contrib/sessions"
@@ -22,6 +23,7 @@ type Data struct {
 	Store cookie.Store
 	Bdd  *pk.Pk
 	Conf  *config.Conf
+	Api map[string]*api.Config
 }
 
 type Server struct {
@@ -88,6 +90,24 @@ func GinConfig(i *config.Conf) {
 	gin.DefaultWriter = io.MultiWriter(f)
 }
 
+func (s *Server) FourTwo() {
+	ap:= &api.Config{
+		Host:  "https://api.insee.fr/",
+		Oauth: api.Oauth{},
+		Headers: map[string]string{
+			"grant_type": "client_credentials",
+		},
+	}
+	ap.Oauth.ClientID = "86023b24c48480f95e5b24b5a0d90939815fe16781adea9eb04ab34d3537b026"
+	ap.Oauth.TokenURL = "https://api.intra.42.fr/oauth/token"
+	ap.Oauth.AuthURL = "https://api.intra.42.fr/oauth/authorize"
+	ap.Oauth.AuthParam = map[string]string{
+		"grant_type": "client_credentials",
+	}
+	ap.Oauth.RedirectURL = "http://gopiko.fr:9000/user/token"
+	s.Data.Api["42"] = ap
+}
+
 func NewServer(i *config.Conf) (a *Server) {
 	GinConfig(i)
 	router := gin.Default()
@@ -96,11 +116,13 @@ func NewServer(i *config.Conf) (a *Server) {
 			Store: cookie.NewStore([]byte("secret")),
 			Bdd: pk.NewPk(*i),
 			Conf:  i,
+			Api: make(map[string]*api.Config),
 		},
 		Router: router,
 		Handle: make(map[string]*Handle),
 	}
 	router.Use(sessions.Sessions("mysession", a.Data.Store))
+	a.FourTwo()
 	return
 }
 
