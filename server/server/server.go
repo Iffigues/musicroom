@@ -99,6 +99,7 @@ func (s *Server) FourTwo() {
 		},
 	}
 	ap.Oauth.ClientID = "86023b24c48480f95e5b24b5a0d90939815fe16781adea9eb04ab34d3537b026"
+	ap.Oauth.ClientSecret = "2411b140d3f8fb889e27dd89236f8008bb03779e1ba2333693c38a38e9bcb33c"
 	ap.Oauth.TokenURL = "https://api.intra.42.fr/oauth/token"
 	ap.Oauth.AuthURL = "https://api.intra.42.fr/oauth/authorize"
 	ap.Oauth.AuthParam = map[string]string{

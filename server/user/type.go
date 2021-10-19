@@ -12,6 +12,8 @@ import (
 	"net/http"
 	"os"
 	"log"
+	"fmt"
+	"context"
 )
 
 type UserUtils struct {
@@ -134,10 +136,24 @@ func (u *UserUtils) Get42(c *gin.Context) {
 	println(cc.GetURL())
 }
 
+func (u *UserUtils) Tok(c *gin.Context) {
+	cc, err := u.S.Data.Api["42"].NewClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+	ctx := context.Background()
+	cc.Code = c.Query("code")
+	fmt.Println("code=", cc.Code)
+	cc.Types = 1
+	err = cc.Authenticate(ctx)
+	fmt.Println(ctx, err)
+}
+
 func (u *UserUtils) WWW(s *server.Server) {
 	s.NewR("/user/signup", "user", "POST", 1, u.S.MakeMe(u.UserHandler))
 	s.NewR("/user/signin", "users", "POST", 1, u.S.MakeMe(u.GetUsers))
 	s.NewR("/user/signout","deluser", "GET", 1, u.S.MakeMe(TokenAuthMiddleware ,u.DelUser))
 	s.NewR("user/verif/:token", "verifuser", "GET", 1, u.S.MakeMe(u.UserVerif))
 	s.NewR("/user/42", "get42", "GET", 1, u.S.MakeMe(u.Get42))
+	s.NewR("/user/token", "g42", "GET", 1, u.S.MakeMe(u.Tok))
 }
