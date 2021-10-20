@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v7"
 
+	"encoding/json"
 	"net/http"
 	"os"
 	"log"
@@ -19,6 +20,18 @@ import (
 type UserUtils struct {
 	S *server.Server
 	Client *redis.Client
+}
+
+type App struct {
+	Uid string
+}
+
+type Fo struct {
+	Roi int `json:"resource_owner_id"`
+	Scopes []string `json:"scopes"`
+	Eis int `json:"expires_in_seconds"`
+	App App `json:"application"`
+	Ca int64 `json:"created_at"`
 }
 
 type User struct {
@@ -137,16 +150,24 @@ func (u *UserUtils) Get42(c *gin.Context) {
 }
 
 func (u *UserUtils) Tok(c *gin.Context) {
+	target := &Fo{}
 	cc, err := u.S.Data.Api["42"].NewClient()
 	if err != nil {
 		log.Fatal(err)
 	}
 	ctx := context.Background()
 	cc.Code = c.Query("code")
-	fmt.Println("code=", cc.Code)
 	cc.Types = 1
 	err = cc.Authenticate(ctx)
-	fmt.Println(ctx, err)
+	if err != nil {
+		return
+	}
+	resp, errs :=  cc.Client.Get("https://api.intra.42.fr/oauth/token/info")
+	if errs != nil {
+	}
+	if  err = json.NewDecoder(resp.Body).Decode(&target); err != nil {
+	}
+	fmt.Println(target)
 }
 
 func (u *UserUtils) WWW(s *server.Server) {
