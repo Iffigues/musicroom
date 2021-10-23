@@ -86,6 +86,13 @@ func (u *UserUtils)UserHandler(c *gin.Context) {
 		c.JSON(403, gin.H{"status":"bading"})
 		return
 	}
+	Password, err := util.Crypte(login.Password)
+	if err != nil {
+		println(err.Error())
+		c.JSON(400, gin.H{"status": "bad"})
+		return
+	}
+	login.Password = string(Password)
 	if err := u.AddUser(&login); err != nil {
 		c.JSON(400, gin.H{"status": "bad"})
 		return
@@ -98,7 +105,12 @@ func (u *UserUtils)UserHandler(c *gin.Context) {
 func (u *UserUtils)GetUsers(c *gin.Context) {
 	var login User
 	c.BindJSON(&login)
+	t := login.Password
 	if err := u.GetUser(&login); err != nil {
+		c.JSON(400, gin.H{"status": "bad"})
+		return
+	}
+	if !util.Decrypt([]byte(login.Password), []byte(t)) {
 		c.JSON(400, gin.H{"status": "bad"})
 		return
 	}
