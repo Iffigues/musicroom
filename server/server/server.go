@@ -15,10 +15,28 @@ import (
 	"github.com/gin-contrib/sessions/cookie"
 )
 
+/*
+	interface for allow plugin to add route.
+	the plugin structure have to have this function instance or you will get error in compilation
+	example:
+	type Man struct {
+	}
+	func (m *Man) WWW(s *Server) {
+			s.NewR( path , route name , <"GET","POST", ...>, integer role (anonyme, user, admin) , u.S.MakeMe(m.MyHandlerFunc))
+	}
+*/
 type HH interface {
 	WWW(*Server)
 }
 
+
+/*
+	Data structure contain all configuration and tool for the server and plugin
+	Store: session
+	Bdd: sql 
+	Conf: configuration 
+	api: tool for make api request
+*/
 type Data struct {
 	Store cookie.Store
 	Bdd  *pk.Pk
@@ -26,13 +44,23 @@ type Data struct {
 	Api map[string]*api.Config
 }
 
+/*
+	server structure is the server object.
+	contains Router who is the template http motor (router, session, request)
+	Data is the data use by server and plugin
+	Handle is the route for the server
+	Give is the array interface for allow plugin add Handle
+*/
 type Server struct {
 	Router *gin.Engine
-//	Router *gin.RouterGroup
 	Data   *Data
 	Handle map[string]*Handle
 	Give   []HH
 }
+
+/*
+	Handl structure is the route use by server
+*/
 
 type Handle struct {
 	Role	int
