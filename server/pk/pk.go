@@ -63,19 +63,30 @@ func (a *Pk) Init() {
 }
 
 func (a *Pk) Reset() {
-	o := "DROP DATABASE IF EXISTS musicroom;"
+	o := "DROP DATABASE IF EXISTS musicroom"
+	c := "DROP FUNCTION IF EXISTS haversin"
+	g := "DROP EVENT IF EXISTS delete_event"
 	bdd, err := a.Connect()
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer bdd.Close()
-	_, err = bdd.Query(o)
+	_, err = bdd.Query(c)
 	if err != nil {
+		log.Fatal(err)
+	}
+	if _, err = bdd.Query(g); err != nil {
+		log.Fatal(err)
+	}
+	if _, err = bdd.Query(o); err != nil {
 		log.Fatal(err)
 	}
 }
 
 func (a *Pk) Tables(db *sql.DB) {
+	if _, err := db.Exec(`DROP FUNCTION IF EXISTS haversine`); err != nil {
+		log.Fatal(err)
+	}
 	haversin := `CREATE FUNCTION haversine(
 			        lat1 FLOAT, lon1 FLOAT,
 			        lat2 FLOAT, lon2 FLOAT
@@ -90,6 +101,7 @@ func (a *Pk) Tables(db *sql.DB) {
 				                ));
 			END`
 	if _, err := db.Exec(haversin); err != nil {
+		log.Fatal(err)
 	}
 
 }
