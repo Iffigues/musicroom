@@ -15,6 +15,7 @@ import (
 	"log"
 	"fmt"
 	"context"
+	"text/template"
 )
 
 type UserUtils struct {
@@ -143,14 +144,17 @@ func (u *UserUtils)DelUser(c *gin.Context) {
 
 func (u *UserUtils)UserVerif(c *gin.Context) {
 	username := c.Param("token")
-	var err error
 	if util.IsValidUUID(username) == true {
-		if err = u.GetUseriVerif(username); err == nil {
-			c.JSON(200,gin.H{"match":"true"})
-			return
+		if err := u.GetUseriVerif(username); err == nil {
+			t, err := template.ParseFiles("./template/accept.tmpl")
+			if err == nil {
+				t.Execute(c.Writer, nil)
+				return
+			}
+			//c.HTML(200, "template/accept.tmpl", nil)
+			//return
 		}
 	}
-	println(err.Error())
 	c.JSON(400,gin.H{"match":"false"})
 }
 
