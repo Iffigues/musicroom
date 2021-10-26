@@ -143,12 +143,14 @@ func (u *UserUtils)DelUser(c *gin.Context) {
 
 func (u *UserUtils)UserVerif(c *gin.Context) {
 	username := c.Param("token")
+	var err error
 	if util.IsValidUUID(username) == true {
-		if err := u.GetUseriVerif(username); err == nil {
+		if err = u.GetUseriVerif(username); err == nil {
 			c.JSON(200,gin.H{"match":"true"})
 			return
 		}
 	}
+	println(err.Error())
 	c.JSON(400,gin.H{"match":"false"})
 }
 
@@ -157,7 +159,7 @@ func (u *UserUtils) Get42(c *gin.Context) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	cc.Types = 2;
+	cc.Types = 1;
 	println(cc.GetURL())
 }
 
@@ -172,6 +174,7 @@ func (u *UserUtils) Tok(c *gin.Context) {
 	cc.Types = 1
 	err = cc.Authenticate(ctx)
 	if err != nil {
+		println(err.Error())
 		return
 	}
 	resp, errs :=  cc.Client.Get("https://api.intra.42.fr/oauth/token/info")
@@ -189,4 +192,5 @@ func (u *UserUtils) WWW(s *server.Server) {
 	s.NewR("user/verif/:token", "verifuser", "GET", 1, u.S.MakeMe(u.UserVerif))
 	s.NewR("/user/42", "get42", "GET", 1, u.S.MakeMe(u.Get42))
 	s.NewR("/user/token", "g42", "GET", 1, u.S.MakeMe(u.Tok))
+	s.NewR("/user/friend/add","fa", "GET", 1, u.S.MakeMe(u.AddFriend))
 }

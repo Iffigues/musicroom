@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"golang.org/x/oauth2"
 )
 
 // SetCode set Code string
@@ -68,4 +69,17 @@ func (c *Client) Body(payload interface{}) (body []byte, err error) {
 		body, err = json.Marshal(payload)
 	}
 	return
+}
+
+func (c *Client) Refresh(ctx context.Context) {
+	var contexts context.Context
+	if ctx == nil {
+		contexts = context.Background()
+	} else {
+		contexts = ctx
+	}
+	token := new(oauth2.Token)
+	token.AccessToken = c.Token.AccessToken
+	c.Token = token
+	c.Client = c.Oauth.Client(contexts, c.Token)
 }

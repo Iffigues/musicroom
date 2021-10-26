@@ -4,6 +4,7 @@ import (
 	"github.com/iffigues/musicroom/util"
 	"github.com/iffigues/musicroom/postmail"
 	"errors"
+	"fmt"
 	"log"
 )
 
@@ -34,6 +35,17 @@ func (a *UserUtils) InitUser() {
 		FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
 	)`
 	if _, err := db.Exec(verif); err != nil {
+		log.Fatal(err)
+	}
+	friend := `CREATE TABLE IF NOT EXISTS friends (
+		id INT primary key auto_increment,
+		user_id INT NOT NULL,
+		friend_id INT NOT NULL,
+		accept boolean,
+		FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
+		FOREIGN KEY (friend_id) REFERENCES user(id) ON DELETE CASCADE
+	)`
+	if _, err := db.Exec(friend);  err != nil {
 		log.Fatal(err)
 	}
 }
@@ -86,6 +98,9 @@ func (a *UserUtils) GetUser(u *User) (err error){
 	if err != nil {
 		return err
 	}
+	if !u.MailVerif {
+		return errors.New("ee")
+	}
 	return nil
 }
 
@@ -98,7 +113,6 @@ func (a *UserUtils) GetUseriVerif(uid string) (err error){
 	if err != nil {
 		return err
 	}
-	println("zaza")
 	defer db.Close()
 
 	ee := ""
@@ -107,18 +121,19 @@ func (a *UserUtils) GetUseriVerif(uid string) (err error){
 	if err != nil {
 		return err
 	}
-	println("ezezez")
+	println(ee)
 	if ee == "" {
 		return errors.New("empty user")
 	}
-	println("eee")
-	_, err = db.Exec("UPDATE user SET email_verif = TRUE WHERE uuid = ?", ee)
+	zz, errs := db.Exec("UPDATE user SET email_verif = TRUE WHERE id = ?", ee)
 
-	if err != nil {
-		return err
+	fmt.Println(ee)
+	fmt.Println(zz.RowsAffected())
+
+	if errs != nil {
+		return errs
 	}
 
 	_,err = db.Exec("DELETE FROM verif_user WHERE uuid = ?", uid)
-	print(uid)
 	return err
  }
