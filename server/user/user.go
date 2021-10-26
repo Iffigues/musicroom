@@ -47,6 +47,17 @@ func (a *UserUtils) InitUser() {
 	if _, err := db.Exec(friend);  err != nil {
 		log.Fatal(err)
 	}
+	event := `CREATE EVENT IF NOT EXISTS delete_event
+		ON SCHEDULE AT CURRENT_TIMESTAMP + INTERVAL 1 DAY
+		ON COMPLETION PRESERVE
+	
+		DO BEGIN
+			DELETE FROM user WHERE creation_date < DATE_SUB(NOW(), INTERVAL 7 DAY) AND email_verif = false;
+		END
+	`
+	if _, err := db.Exec(event); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func (a *UserUtils) SendMail(u string) (err error) {
