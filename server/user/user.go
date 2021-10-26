@@ -4,7 +4,6 @@ import (
 	"github.com/iffigues/musicroom/util"
 	"github.com/iffigues/musicroom/postmail"
 	"errors"
-	"fmt"
 	"log"
 )
 
@@ -115,25 +114,18 @@ func (a *UserUtils) GetUseriVerif(uid string) (err error){
 	}
 	defer db.Close()
 
-	ee := ""
-
-	err = db.QueryRow("SELECT user_id FROM verif_user WHERE uuid = ?", uid).Scan(&ee)
-	if err != nil {
+	ex := `UPDATE user SET email_verif = true WHERE user.id = (select user_id FROM verif_user WHERE uuid = ?)`
+	if row, err := db.Exec(ex,uid); err != nil {
 		return err
+	} else {
+		if a, err := row.RowsAffected(); err != nil {
+			return err
+		} else {
+			if a == 0 {
+				return errors.New("No row affected");
+			}
+		}
 	}
-	println(ee)
-	if ee == "" {
-		return errors.New("empty user")
-	}
-	zz, errs := db.Exec("UPDATE user SET email_verif = TRUE WHERE id = ?", ee)
-
-	fmt.Println(ee)
-	fmt.Println(zz.RowsAffected())
-
-	if errs != nil {
-		return errs
-	}
-
 	_,err = db.Exec("DELETE FROM verif_user WHERE uuid = ?", uid)
 	return err
  }
