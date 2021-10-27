@@ -40,7 +40,8 @@ func (a *UserUtils) InitUser() {
 		id INT primary key auto_increment,
 		user_id INT NOT NULL,
 		friend_id INT NOT NULL,
-		accept boolean,
+		accept boolean DEFAULT NULL,
+		date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 		FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
 		FOREIGN KEY (friend_id) REFERENCES user(id) ON DELETE CASCADE
 	)`
@@ -53,6 +54,7 @@ func (a *UserUtils) InitUser() {
 	
 		DO BEGIN
 			DELETE FROM user WHERE creation_date < DATE_SUB(NOW(), INTERVAL 7 DAY) AND email_verif = false;
+			DELETE FROM friends WHERE date < DATE_SUB(NOW(), INTERVAL 40 DAY) AND accept = false;
 		END
 	`
 	if _, err := db.Exec(event); err != nil {
