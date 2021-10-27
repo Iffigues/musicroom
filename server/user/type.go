@@ -196,5 +196,5 @@ func (u *UserUtils) WWW(s *server.Server) {
 	s.NewR("user/verif/:token", "verifuser", "GET", 1, u.S.MakeMe(u.UserVerif))
 	s.NewR("/user/42", "get42", "GET", 1, u.S.MakeMe(u.Get42))
 	s.NewR("/user/token", "g42", "GET", 1, u.S.MakeMe(u.Tok))
-	s.NewR("/user/friend/add","fa", "GET", 1, u.S.MakeMe(u.AddFriend))
+	s.NewR("/user/friend/add","fa", "POST", 1, u.S.MakeMe(u.AddFriend))
 }
