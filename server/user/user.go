@@ -40,12 +40,24 @@ func (a *UserUtils) InitUser() {
 		id INT primary key auto_increment,
 		user_id INT NOT NULL,
 		friend_id INT NOT NULL,
-		accept boolean DEFAULT NULL,
+		accept INT DEFAULT 0,
 		date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 		FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
 		FOREIGN KEY (friend_id) REFERENCES user(id) ON DELETE CASCADE
 	)`
+	friends := `CREATE TABLE IF NOT EXISTS friend (
+		id INT primary key auto_increment,
+		user_id INT NOT NULL,
+		friend_id INT NOT NULL,
+		ban boolean default false,
+		FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
+		FOREIGN KEY (friend_id) REFERENCES user(id) ON DELETE CASCADE
+	)`
+
 	if _, err := db.Exec(friend);  err != nil {
+		log.Fatal(err)
+	}
+	if _, err := db.Exec(friends); err != nil {
 		log.Fatal(err)
 	}
 	event := `CREATE EVENT IF NOT EXISTS delete_event
