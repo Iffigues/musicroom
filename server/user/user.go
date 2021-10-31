@@ -15,13 +15,12 @@ func (a *UserUtils) InitUser() {
 	defer db.Close()
 	user := `CREATE TABLE IF NOT EXISTS user(
 			id INT primary key auto_increment,
-			name VARCHAR(100) NOT NULL,
+			name VARCHAR(100)  UNIQUE NOT NULL,
 			uuid  VARCHAR(255),
-			email  VARCHAR(100) UNIQUE,
+			email  VARCHAR(100)  UNIQUE NOT NULL,
 			password VARCHAR(255),
 			creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 			Fb_account_linked BOOLEAN DEFAULT FALSE,
-			oauth BOOLEAN Default false,
 			email_verif BOOLEAN DEFAULT false
 		)`
 	if _, err := db.Exec(user); err != nil {
@@ -89,6 +88,26 @@ func (a *UserUtils) InitUser() {
 	if _, err := db.Exec(event); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func (a *UserUtils) AddOauthUser(u Four) (error) {
+	db, err := a.S.Data.Bdd.Connect()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	var g bool
+	eo := `SELECT IF(COUNT(*),'true','false') FROM user WHERE uuid = ?`
+	errs :=  db.QueryRow(eo, u.Uuid).Scan(&g)
+	if errs != nil {
+		return errs
+	}
+	if g {
+		return nil
+	}
+	eo = `INSERT INTO user (uuid, name, email, Fb_account_linked) VALUES (?, ? , ?, true)`
+	_, errs = db.Exec(eo, u.Uuid, u.Login, u.Email)
+	return errs
 }
 
 func (a *UserUtils) SendMail(u, email string) (err error) {

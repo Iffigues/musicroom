@@ -49,6 +49,8 @@ type User struct {
 
 type Four struct {
 	Email	string `json:"email"`
+	Login	string `json:"login"`
+	Uuid	string
 }
 
 type AccessDetails struct {
@@ -201,7 +203,9 @@ func (u *UserUtils) Tok(c *gin.Context) {
 	if err = json.NewDecoder(rr.Body).Decode(&gg); err != nil {
 		fmt.Println(err)
 	}
+	gg.Uuid = target.App.Uid
 	fmt.Println(target, gg)
+	fmt.Println(u.AddOauthUser(*gg))
 }
 
 func (u *UserUtils) WWW(s *server.Server) {

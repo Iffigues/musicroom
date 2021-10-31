@@ -10,7 +10,7 @@ type Adder struct {
 }
 
 func (u *UserUtils) AddFriend(c *gin.Context) {
-	e, ee :=ExtractTokenMetadata(c.Request)
+	e, ee := ExtractTokenMetadata(c.Request)
 	if ee != nil {
 		return
 	}
