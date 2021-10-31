@@ -2,10 +2,13 @@ package room
 
 import (
 	"log"
-
 )
 
-
+/*Sommaire NOTE: 
+	InitRoom : Init DB room and song
+	Room methods : Add, Get, Upd, Del room methods
+	Song methods : Add, Get, Upd, Del song methods
+*/
 
 func (a *RoomUtils) InitRoom() {
 	db, err := a.S.Data.Bdd.Connect()
@@ -30,6 +33,7 @@ func (a *RoomUtils) InitRoom() {
 		name  VARCHAR(255),
 		author VARCHAR(255),
 		ranking INT,
+		track_id INT,
 		creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 		last_modif TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 		isplayed BOOLEAN DEFAULT false
@@ -39,6 +43,8 @@ func (a *RoomUtils) InitRoom() {
 	}
 }
 
+//NOTE: Room methods
+//NOTE: Add a new room to BDD
 func (a *RoomUtils) AddRoom(r *Room) (err error){
 	db, err := a.S.Data.Bdd.Connect()
 	if err != nil {
@@ -56,7 +62,7 @@ func (a *RoomUtils) AddRoom(r *Room) (err error){
 	return nil
 }
 
-
+//NOTE: Add room by id
 func (a *RoomUtils) GetRoom(r *Room) (err error){
 	
 	db, err := a.S.Data.Bdd.Connect()
@@ -70,5 +76,41 @@ func (a *RoomUtils) GetRoom(r *Room) (err error){
 	}
 	return nil
 }
+
+//NOTE: get all rooms
+func (a *RoomUtils) GetAllRoom(r *[]Room) (err error){
+	
+	db, err := a.S.Data.Bdd.Connect()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	rows, err := db.Query("SELECT name, creator_id FROM room")
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var room Room
+		if err := rows.Scan(&room.Name, &room.CreatorId); err != nil {
+			return err
+		}
+		*r = append(*r, room)
+	}
+	if err = rows.Err(); err != nil {
+		return err
+	}
+	return nil
+	
+}
+
+
+//NOTE: Song methods
+
+
+
+
+
 
 

@@ -10,6 +10,14 @@ import (
 
 )
 
+/*Sommaire NOTE: 
+	struct : Struct server, room, song
+	NewRoom : Create table in bdd
+	Room  : Api handler Add, Get, Upd, Del song
+	Song : 	Room  : Api handler Add, Get, Upd, Del song
+	ROUTE : api routing
+*/
+
 type RoomUtils struct {
 	S *server.Server
 }
@@ -20,14 +28,15 @@ type Room struct {
 	CreatorId	int `json:"creator_id"`
 }
 
-// albums slice to seed record album data.
-var Albums = []Room{
-    {Id: 1, Name: "Blue Train", CreatorId: 1},
-    {Id: 2, Name: "Totoro", CreatorId: 1},
-    {Id: 3, Name: "Titi", CreatorId: 1},
+type Song struct {
+	Id int `json:"id"`
+	Name	string `json:"name"`
+	Author	string `json:"author"`
+	Ranking int `json:"ranking"`
+	IsPlayed	bool   `json:"isplayed"`
 }
 
-
+//NOTE: Create table in bdd
 func NewRoom(s *server.Server) (r *RoomUtils) {
 	r = new(RoomUtils)
 	r.S = s
@@ -35,8 +44,8 @@ func NewRoom(s *server.Server) (r *RoomUtils) {
 	return
 }
 
-
-
+//NOTE: Room Api handler
+//NOTE: Api handler add a room
 func (r *RoomUtils)RoomHandler(c *gin.Context) {
 	var room Room
 	c.BindJSON(&room)
@@ -47,11 +56,17 @@ func (r *RoomUtils)RoomHandler(c *gin.Context) {
 	c.JSON(200, gin.H{"status": "OK"})
 }
 
+//NOTE: Api handler get all rooms
 func (r *RoomUtils)GetAllRooms(c *gin.Context) {
-    c.IndentedJSON(http.StatusOK, Albums)
-
+	var rooms []Room
+	if err := r.GetAllRoom(&rooms); err != nil {
+		c.JSON(400, gin.H{"status": "bad"})
+		return
+	}
+    c.IndentedJSON(http.StatusOK, rooms)
 }
 
+//NOTE: Api handler get room by id
 func (r *RoomUtils)GetRooms(c *gin.Context) {
     id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -67,6 +82,12 @@ func (r *RoomUtils)GetRooms(c *gin.Context) {
     c.IndentedJSON(http.StatusOK, room)
 }
 
+
+//NOTE: Song Api handler
+
+
+
+//NOTE: ROUTE
 func (r *RoomUtils) WWW(s *server.Server) {
 	s.NewR("/room/add", "room", "POST", 1, r.S.MakeMe(r.RoomHandler))
 	s.NewR("/rooms", "rooms", "GET", 1, r.S.MakeMe(r.GetAllRooms))

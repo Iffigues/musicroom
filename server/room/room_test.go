@@ -19,7 +19,7 @@ func TestAddRoom(t *testing.T) {
 	s.AddHH(c)
 	go servertest.LanceServe(s)
 }
-
+//Golang http, ouvrir client
 func TestGetRoom(t *testing.T) {
 	s := servertest.Serves();
 
