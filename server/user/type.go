@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v7"
 
+	"strconv"
 	"encoding/json"
 	"net/http"
 	"os"
@@ -19,30 +20,35 @@ import (
 )
 
 type UserUtils struct {
-	S *server.Server
-	Client *redis.Client
+	S	*server.Server
+	Client	*redis.Client
 }
 
 type App struct {
-	Uid string
+	Uid	string
 }
 
 type Fo struct {
-	Roi int `json:"resource_owner_id"`
-	Scopes []string `json:"scopes"`
-	Eis int `json:"expires_in_seconds"`
-	App App `json:"application"`
-	Ca int64 `json:"created_at"`
+	Roi	int `json:"resource_owner_id"`
+	Scopes	[]string `json:"scopes"`
+	Eis	int `json:"expires_in_seconds"`
+	App	App `json:"application"`
+	Ca	int64 `json:"created_at"`
 }
 
 type User struct {
+	Email		string `json:"email"`
+	Uid		string `json:"uuid"`
+	Password	string `json:"pwd"`
+	Name		string `json:"name"`
+	Types		bool
+	Buy		bool   `json:"buy"`
+	MailVerif	bool
+	TokenEmail	uuid.UUID
+}
+
+type Four struct {
 	Email	string `json:"email"`
-	Uid	string `json:"uuid"`
-	Password string `json:"pwd"`
-	Types	bool
-	Buy	bool   `json:"buy"`
-	MailVerif bool
-	TokenEmail uuid.UUID
 }
 
 type AccessDetails struct {
@@ -169,6 +175,7 @@ func (u *UserUtils) Get42(c *gin.Context) {
 
 func (u *UserUtils) Tok(c *gin.Context) {
 	target := &Fo{}
+	gg := &Four{}
 	cc, err := u.S.Data.Api["42"].NewClient()
 	if err != nil {
 		log.Fatal(err)
@@ -183,10 +190,18 @@ func (u *UserUtils) Tok(c *gin.Context) {
 	}
 	resp, errs :=  cc.Client.Get("https://api.intra.42.fr/oauth/token/info")
 	if errs != nil {
+		fmt.Println(err)
 	}
 	if  err = json.NewDecoder(resp.Body).Decode(&target); err != nil {
 	}
-	fmt.Println(target)
+	rr, ee := cc.Client.Get("https://api.intra.42.fr/v2/users/" +  strconv.Itoa(target.Roi))
+	if ee != nil {
+		fmt.Println(err)
+	}
+	if err = json.NewDecoder(rr.Body).Decode(&gg); err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(target, gg)
 }
 
 func (u *UserUtils) WWW(s *server.Server) {
@@ -199,4 +214,6 @@ func (u *UserUtils) WWW(s *server.Server) {
 	s.NewR("/user/friend/add", "fa", "POST", 1, u.S.MakeMe(u.AddFriend))
 	s.NewR("/user/friend/accept", "fi", "POST", 1, u.S.MakeMe(u.AcceptFriend))
 	s.NewR("/user/friend/refuse", "fd", "POST", 1, u.S.MakeMe(u.RefuseFriend))
+	s.NewR("/user/friend/get", "ge", "GET", 1, u.S.MakeMe(u.ShowFriend))
+	s.NewR("/user/friend/all", "al", "GET", 1 , u.S.MakeMe(u.GetAllFriend))
 }

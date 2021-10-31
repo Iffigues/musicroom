@@ -1,7 +1,6 @@
 package user
 
 import (
-	"github.com/iffigues/musicroom/util"
 	"github.com/gin-gonic/gin"
 	"fmt"
 )
@@ -12,7 +11,9 @@ type Adder struct {
 
 func (u *UserUtils) AddFriend(c *gin.Context) {
 	e, ee :=ExtractTokenMetadata(c.Request)
-	fmt.Println(e.UserId, ee)
+	if ee != nil {
+		return
+	}
 	var g bool
 	var f Adder
 	c.BindJSON(&f)
@@ -29,12 +30,68 @@ func (u *UserUtils) AddFriend(c *gin.Context) {
 		fmt.Println(err)
 	}
 	if !g {
-		t := `INSERT INTO friends (uuid, user_id, friend_id) VALUES(?, (SELECT id FROM user WHERE uuid =?),(SELECT id FROM user WHERE uuid = ?))`
+		t := `INSERT INTO friends (user_id, friend_id) VALUES((SELECT id FROM user WHERE uuid =?),(SELECT id FROM user WHERE uuid = ?))`
 		if _, err := db.Exec(t, e.UserId, f.F); err  != nil {
 			fmt.Println(err)
 		} else {
 			fmt.Println("oui")
 		}
+	}
+}
+
+func (a *UserUtils) GetAllFriend(c *gin.Context) {
+	fmt.Print("eazeaz")
+	e, err := ExtractTokenMetadata(c.Request)
+	if err != nil {
+		return
+	}
+	db, errs := a.S.Data.Bdd.Connect()
+	if errs != nil {
+		return
+	}
+	eo := `SELECT a.id FROM user as q
+		JOIN friend as a ON a.user_id = q.id OR a.friend_id = q.id
+		WHERE q.uuid = ? 
+	`
+	rows, errt := db.Query(eo, e.UserId)
+	if errt != nil {
+		return
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var t int
+		rows.Scan(&t)
+		fmt.Println("t=", t)
+	}
+}
+
+func (u *UserUtils) ShowFriend(c *gin.Context) {
+	var t []int
+	e, err := ExtractTokenMetadata(c.Request)
+	if err != nil {
+		return
+	}
+	eo := `SELECT user.id From user WHERE id = (SELECT user_id FROM friends WHERE friend_id = (SELECT id FROM user WHERE uuid = ?))`
+	db, errs := u.S.Data.Bdd.Connect()
+	if errs != nil {
+		return
+	}
+	rows, errt := db.Query(eo, e.UserId)
+	if errt != nil {
+		fmt.Println(errt)
+		return
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var tt int
+		if err := rows.Scan(&tt); err != nil {
+			fmt.Println(err)
+		}
+		t = append(t, tt)
+	}
+	fmt.Println(t)
+	if err := rows.Err(); err != nil {
+	   fmt.Println(err)
 	}
 }
 
