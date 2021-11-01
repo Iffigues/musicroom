@@ -1,4 +1,5 @@
-{{define "register"}}<!DOCTYPE html>
+{{define "forgot"}}
+<!DOCTYPE html>
 <html lang="fr">
     <head>
         <meta charset="utf-8">
@@ -9,7 +10,7 @@
 	</style>
     </head>
     <body>
-	    <a href="{{.}}">Accept</a>
+	    <a href="{{.}}">recover password</a>
     </body>
 </html>
 {{end}}

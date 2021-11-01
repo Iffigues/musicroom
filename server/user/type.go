@@ -204,8 +204,24 @@ func (u *UserUtils) Tok(c *gin.Context) {
 		fmt.Println(err)
 	}
 	gg.Uuid = target.App.Uid
-	fmt.Println(target, gg)
-	fmt.Println(u.AddOauthUser(*gg))
+	err = u.AddOauthUser(*gg)
+	if err != nil {
+		fmt.Println(err)
+	}
+	var lo User
+	lo.Uid = gg.Uuid
+	lo.Email = gg.Email
+	ts, err := u.CreateToken(lo, true)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, err.Error())
+		return
+	}
+	u.CreateAuth(lo.Uid, ts)
+	tokens := map[string]string{
+		"access_token":  ts.AccessToken,
+		"refresh_token": ts.RefreshToken,
+	}
+	c.JSON(http.StatusOK, tokens)
 }
 
 func (u *UserUtils) WWW(s *server.Server) {
@@ -220,4 +236,7 @@ func (u *UserUtils) WWW(s *server.Server) {
 	s.NewR("/user/friend/refuse", "fd", "POST", 1, u.S.MakeMe(u.RefuseFriend))
 	s.NewR("/user/friend/get", "ge", "GET", 1, u.S.MakeMe(u.ShowFriend))
 	s.NewR("/user/friend/all", "al", "GET", 1 , u.S.MakeMe(u.GetAllFriend))
+	s.NewR("/user/forgot", "ff", "POST", 1, u.S.MakeMe(u.Forgot))
+	s.NewR("/user/forgot/:token", "ffa", "GET", 1, u.S.MakeMe(u.Change_Forgot))
+	s.NewR("/user/forgot/change/:token", "ffd", "POST", 1, u.S.MakeMe(u.Change))
 }

@@ -1,0 +1,14 @@
+<html>
+	<head>
+	</head>
+	<body>
+		<h1>Chaneg Password</h1>
+		<form method="POST" action="/user/forgot/change/{{.}}">
+		<label for="pwd">Password:</label>
+		<input type="password" id="pwd" name="pwd">	
+		<label for="pwd1">Rewrite Password:</label>
+		<input type="password" id="pwd1" name="pwd1">
+		<input type="submit" value="Send">
+		</form>
+	</body>
+</html>
