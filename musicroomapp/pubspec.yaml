@@ -36,6 +36,10 @@ dependencies:
   cupertino_icons: ^1.0.2
   provider: ^6.0.0
   gallery: ^0.0.1
+  flutter_facebook_auth: ^3.5.2
+  font_awesome_flutter: ^9.2.0
+  audioplayers: ^0.20.1
+  file_picker: ^4.2.0
 
 dev_dependencies:
   flutter_test:
