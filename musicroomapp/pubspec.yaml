@@ -36,6 +36,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   provider: ^6.0.0
   gallery: ^0.0.1
+  form_field_validator: ^1.1.0
 
 dev_dependencies:
   flutter_test:

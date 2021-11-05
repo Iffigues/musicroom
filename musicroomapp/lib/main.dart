@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:musicroomapp/login.dart';
+import 'package:musicroomapp/signin.dart';
 import 'package:musicroomapp/style.dart';
 import 'package:musicroomapp/playlist.dart';
 import 'package:musicroomapp/listmodel.dart';
@@ -25,6 +26,7 @@ class MyApp extends StatelessWidget {
         initialRoute: '/',
         routes: {
           '/': (context) => const MyLogin(),
+          '/signin': (context) => const MySignIn(),
           '/playlist': (context) => const MyPlaylist(),
         },
       ),

@@ -21,6 +21,15 @@ class MyPlaylist extends StatelessWidget {
                 'Current Room available',
                 style: Theme.of(context).textTheme.headline1,
               ),
+              ElevatedButton(
+                child: const Text('EXIT'),
+                onPressed: () {
+                  Navigator.pushReplacementNamed(context, '/');
+                },
+                style: ElevatedButton.styleFrom(
+                  primary: Colors.yellow,
+                ),
+              )
             ],
           ),
         ),
