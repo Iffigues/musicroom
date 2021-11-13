@@ -38,9 +38,14 @@ type Config struct {
 	State   string            `json:"state"`
 }
 
+type Tok struct {
+	Token string
+	RefreshToken string
+}
+
 // Client is the request client
 type Client struct {
-	Oauth       *oauth2.Config
+	Oauth	*oauth2.Config
 	Legged      *clientcredentials.Config
 	QueryValues url.Values
 	Types       int

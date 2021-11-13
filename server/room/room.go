@@ -2,6 +2,7 @@ package room
 
 import (
 	"log"
+
 )
 
 /*Sommaire NOTE: 
@@ -34,9 +35,14 @@ func (a *RoomUtils) InitRoom() {
 		author VARCHAR(255),
 		ranking INT,
 		track_id INT,
+		room_id INT,
 		creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 		last_modif TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-		isplayed BOOLEAN DEFAULT false
+		isplayed BOOLEAN DEFAULT false,
+		CONSTRAINT musicroom_room
+		FOREIGN KEY (room_id) 
+			REFERENCES room(id)
+			ON DELETE CASCADE
 	)`
 	if _, err := db.Exec(song); err != nil {
 		log.Fatal(err)
@@ -62,7 +68,7 @@ func (a *RoomUtils) AddRoom(r *Room) (err error){
 	return nil
 }
 
-//NOTE: Add room by id
+//NOTE: get room by id
 func (a *RoomUtils) GetRoom(r *Room) (err error){
 	
 	db, err := a.S.Data.Bdd.Connect()
@@ -74,6 +80,23 @@ func (a *RoomUtils) GetRoom(r *Room) (err error){
 	if err != nil {
 		return err
 	}
+	//NOTE : Get playlist Songs
+	/*rows, err := db.Query("SELECT id, name FROM song WHERE room_id = ?", r.Id)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var song Song
+		if err := rows.Scan(&song.Id, &song.Name); err != nil {
+			return err
+		}
+		r.Song = append(r.Song, song)
+	}
+	if err = rows.Err(); err != nil {
+		return err
+	}*/
 	return nil
 }
 
@@ -104,6 +127,26 @@ func (a *RoomUtils) GetAllRoom(r *[]Room) (err error){
 	return nil
 	
 }
+
+
+//NOTE: Delete room by id
+func (a *RoomUtils) DeleteRoom(rid int) (err error){
+	db, err := a.S.Data.Bdd.Connect()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	stmt, errs := db.Prepare("DELETE FROM room WHERE id = ?")
+	if errs != nil {
+		return errs
+	}
+	_, err = stmt.Exec(rid)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 
 
 //NOTE: Song methods

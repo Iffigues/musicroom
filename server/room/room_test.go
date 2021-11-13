@@ -17,7 +17,6 @@ func TestAddRoom(t *testing.T) {
 	}
 
 	s.AddHH(c)
-	go servertest.LanceServe(s)
 }
 //Golang http, ouvrir client
 func TestGetRoom(t *testing.T) {
@@ -31,6 +30,19 @@ func TestGetRoom(t *testing.T) {
 		t.Fatalf(err.Error())
 	}
 	if r.Name != "Un" {
+		t.Fatalf(err.Error())
+	}
+
+	s.AddHH(c)
+}
+//DelRoom  DeleteRoom
+func TestDeleteRoom(t *testing.T) {
+	s := servertest.Serves();
+
+
+	c := NewRoom(s)
+	err := c.DeleteRoom(1)
+	if err != nil {
 		t.Fatalf(err.Error())
 	}
 
