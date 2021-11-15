@@ -5,17 +5,17 @@ import (
 	"github.com/iffigues/musicroom/util"
 	"github.com/iffigues/musicroom/regex"
 
+	"strconv"
 	"github.com/satori/go.uuid"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v7"
-
-	"strconv"
+	 //"io/ioutil"
 	"encoding/json"
 	"net/http"
 	"os"
 	"log"
 	"fmt"
-	"context"
+	//"context"
 	"text/template"
 )
 
@@ -173,34 +173,32 @@ func (u *UserUtils) Get42(c *gin.Context) {
 	}
 	cc.Types = 1;
 	println(cc.GetURL())
+	c.JSON(200, gin.H{"url": cc.GetURL()})
 }
 
 func (u *UserUtils) Tok(c *gin.Context) {
 	target := &Fo{}
 	gg := &Four{}
-	cc, err := u.S.Data.Api["42"].NewClient()
-	if err != nil {
-		log.Fatal(err)
-	}
-	ctx := context.Background()
-	cc.Code = c.Query("code")
-	cc.Types = 1
-	err = cc.Authenticate(ctx)
-	if err != nil {
-		println(err.Error())
-		return
-	}
-	resp, errs :=  cc.Client.Get("https://api.intra.42.fr/oauth/token/info")
-	if errs != nil {
+	code := c.Query("code")
+	var bearer = "Bearer " + code
+	req, err := http.NewRequest("GET", "https://api.intra.42.fr/oauth/token/info", nil)
+	req.Header.Add("Authorization", bearer)
+	client := &http.Client{}
+    resp, err := client.Do(req)
+    if err != nil {
+        log.Println("Error on response.\n[ERROR] -", err)
+    }
+    defer resp.Body.Close()
+    if  err = json.NewDecoder(resp.Body).Decode(&target); err != nil {
 		fmt.Println(err)
+	 }
+	req, err = http.NewRequest("GET", "https://api.intra.42.fr/v2/users/" +  strconv.Itoa(target.Roi), nil)
+	req.Header.Add("Authorization", bearer)
+	resp, err = client.Do(req)
+	if err != nil {
+		log.Println("error", err)
 	}
-	if  err = json.NewDecoder(resp.Body).Decode(&target); err != nil {
-	}
-	rr, ee := cc.Client.Get("https://api.intra.42.fr/v2/users/" +  strconv.Itoa(target.Roi))
-	if ee != nil {
-		fmt.Println(err)
-	}
-	if err = json.NewDecoder(rr.Body).Decode(&gg); err != nil {
+	if err = json.NewDecoder(resp.Body).Decode(&gg); err != nil {
 		fmt.Println(err)
 	}
 	gg.Uuid = target.App.Uid

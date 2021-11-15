@@ -1,6 +1,7 @@
 package user
 
 import (
+	"context"
 	"github.com/iffigues/musicroom/util"
 	"github.com/iffigues/musicroom/postmail"
 	"errors"
@@ -88,6 +89,14 @@ func (a *UserUtils) InitUser() {
 	if _, err := db.Exec(event); err != nil {
 		log.Fatal(err)
 	}
+	rig := `CREATE TABLE IF NOT EXISTS righte (
+		id INT primary key auto_increment,
+		user_id INT NOT NULL,
+		FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
+	)`
+	if _, err := db.Exec(rig); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func (a *UserUtils) AddOauthUser(u Four) (error) {
@@ -96,18 +105,25 @@ func (a *UserUtils) AddOauthUser(u Four) (error) {
 		return err
 	}
 	defer db.Close()
-	var g bool
-	eo := `SELECT IF(COUNT(*),'true','false') FROM user WHERE uuid = ?`
-	errs :=  db.QueryRow(eo, u.Uuid).Scan(&g)
+	ctx := context.Background()
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	eo := `INSERT INTO user (uuid, name, email, Fb_account_linked) VALUES (?, ? , ?, true)`
+	res, errss := tx.ExecContext(ctx, eo, u.Uuid, u.Login, u.Email)
+	if errss != nil {
+		tx.Rollback()
+		return errss
+	}
+	lid, err := res.LastInsertId()
+	eo = `INSER INTO righte (user_id) VALUES (?)`
+	_, errs := tx.ExecContext(ctx, eo, lid)
 	if errs != nil {
+		tx.Rollback()
 		return errs
 	}
-	if g {
-		return nil
-	}
-	eo = `INSERT INTO user (uuid, name, email, Fb_account_linked) VALUES (?, ? , ?, true)`
-	_, errs = db.Exec(eo, u.Uuid, u.Login, u.Email)
-	return errs
+	return tx.Commit()
 }
 
 func (a *UserUtils) SendMail(u, email string) (err error) {
@@ -123,28 +139,48 @@ func (a *UserUtils) AddUser(u *User) (err error){
 	if err != nil {
 		return err
 	}
+	ctx := context.Background()
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
 	defer db.Close()
-	stmt, errs := db.Prepare("INSERT INTO user (uuid, name, email, password) VALUES(?, ?, ?, ?)")
+	stmt, errs := tx.Prepare("INSERT INTO user (uuid, name, email, password) VALUES(?, ?, ?, ?)")
 	if errs != nil {
+		tx.Rollback()
 		return errs
 	}
 	id, errt := stmt.Exec(util.Uid().String(), u.Name, u.Email, u.Password)
 	if errt != nil {
+		tx.Rollback()
 		return errt
 	}
 	lid, errno := id.LastInsertId()
 	if errno != nil {
 		return errno
 	}
-	stmt, err = db.Prepare("INSERT INTO verif_user (user_id, uuid) VALUES(?, ?)")
+	stmt, err = tx.Prepare( "INSERT INTO verif_user (user_id, uuid) VALUES(?, ?)")
 	if err != nil {
+		tx.Rollback()
 		return err
 	}
 	st := util.Uid().String()
-	_, err = stmt.Exec(lid, st)
-	if err != nil {
+	t, erro := stmt.Exec(lid, st)
+	if erro != nil {
+		tx.Rollback()
 		return err
 	}
+	td, erp := t.LastInsertId()
+	if erp != nil  {
+		tx.Rollback()
+		return erp
+	}
+	_, errss := tx.ExecContext(ctx, `INSERT INTO righte (user_id) VALUES (?)`, td)
+	if errss != nil {
+		tx.Rollback()
+		return errss
+	}
+	tx.Commit()
 	return a.SendMail(st, u.Email)
 }
 

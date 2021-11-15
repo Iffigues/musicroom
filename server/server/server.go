@@ -2,6 +2,7 @@ package server
 
 import (
 	"regexp"
+	"github.com/gin-contrib/cors"
 	"net/http"
 	"strings"
 	"github.com/iffigues/musicroom/config"
@@ -140,6 +141,9 @@ func (s *Server) FourTwo() {
 func NewServer(i *config.Conf) (a *Server) {
 	GinConfig(i)
 	router := gin.Default()
+	router.Use(cors.New(cors.Config{
+        AllowOrigins:     []string{"*"},
+    }))
 	a = &Server{
 		Data: &Data{
 			Store: cookie.NewStore([]byte("secret")),
