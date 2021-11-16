@@ -1,15 +1,104 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+import 'dart:math';
+
+import 'package:http/http.dart' as http;
+
 import 'package:flutter/material.dart';
 import 'package:musicroomapp/style.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:spotify_sdk/spotify_sdk.dart';
+
+String getRandString(int len) {
+  var random = Random.secure();
+  var values = List<int>.generate(len, (i) =>  random.nextInt(255));
+  return base64UrlEncode(values);
+}
+
+Future<identified> apiCall() async {
+  //URL WITH WEBVIEW
+
+  var client_id_0 = '4dee364910944d2a9adcc80b54b28942';
+  var redirect_uri_0 = 'http://localhost:8888/callback';
+
+  var state_0 = getRandString(16);
+  var scope_0 = 'user-read-private user-read-email streaming user-read-currently-playing';
+
+  var other_auth = 'https://accounts.spotify.com/authorize';
+  other_auth += '?response_type=token';
+  other_auth += '&client_id=' + Uri.encodeQueryComponent(client_id_0);
+  other_auth += '&scope=' + Uri.encodeQueryComponent(scope_0);
+  other_auth += '&redirect_uri=' + Uri.encodeQueryComponent(redirect_uri_0);
+  other_auth += '&state=' + Uri.encodeQueryComponent(state_0);
+  debugPrint(other_auth);
+  sleep(Duration(seconds:5));
+  http.Request req = http.Request("Get", Uri.parse(other_auth))..followRedirects = false;
+  http.Client baseClient = http.Client();
+  http.StreamedResponse response_0 = await baseClient.send(req);
+  Uri redirectUri = Uri.parse(response_0.headers['location'].toString());
+  final response_1 = await http.post(redirectUri);
+  debugPrint(response_1.body.toString());
+  debugPrint(redirectUri.toString());
+
+  var client_id = '4dee364910944d2a9adcc80b54b28942';
+  var client_secret = '739d19ae0f744531b5a5469ff762afcf';
+  var bytes = utf8.encode(client_id + ':' + client_secret);
+  var base64Str = 'Basic ' + base64.encode(bytes);
+  debugPrint(base64Str);
+  var data = {
+    'grant_type': 'client_credentials'
+  };
+  final response = await http.post(
+    Uri.parse("https://accounts.spotify.com/api/token"),
+    // Send authorization headers to the backend.
+    headers: {
+      HttpHeaders.authorizationHeader: base64Str,
+      HttpHeaders.contentTypeHeader: 'application/x-www-form-urlencoded',
+      },
+      body: data
+  );
+  sleep(Duration(seconds:5));
+  final responseJson = jsonDecode(response.body);
+  debugPrint(response.body);
+  return identified.fromJson(responseJson);
+}
+
+class identified {
+  final String token;
+  final int expires_in;
+
+  identified({
+    required this.token,
+    required this.expires_in,
+  });
+
+  factory identified.fromJson(Map<String, dynamic> json) {
+    return identified(
+      token: json['access_token'],
+      expires_in: json['expires_in'],
+    );
+  }
+
+}
 
 var SpotifyIcon = Icon(
   FontAwesomeIcons.spotify,
   color: Colors.black,
 );
+
+void foo() async {
+  final auth = await apiCall();
+  debugPrint(auth.token);
+}
+
 // in case we need to sync something with spotify first
-var SpotifyButton = IconButton(icon: SpotifyIcon, onPressed: () {});
+var SpotifyButton = IconButton(icon: SpotifyIcon, onPressed: () {
+  debugPrint('movieTitle:');
+  foo();
+});
 
 class MyPlaylist extends StatelessWidget {
   const MyPlaylist({Key? key}) : super(key: key);
