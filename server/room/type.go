@@ -8,6 +8,7 @@ import (
 
 	"net/http"
 	"strconv"
+	"fmt"
 
 )
 
@@ -32,6 +33,7 @@ type Room struct {
 
 type Song struct {
 	Id int `json:"id"`
+	RoomId int `json:"roomid"`
 	Name	string `json:"name"`
 	Author	string `json:"author"`
 	Ranking int `json:"ranking"`
@@ -88,17 +90,35 @@ func (r *RoomUtils)GetRoomHandler(c *gin.Context) {
 
 //NOTE: Api handler del room by id
 func (r *RoomUtils)DelRoomHandler(c *gin.Context) {
-	_, err := user.ExtractTokenMetadata(c.Request)
-	if err != nil {
+	//NOTE: Verif client Rights
+	e, ee := user.ExtractTokenMetadata(c.Request)
+	if ee != nil {
 		c.JSON(http.StatusUnauthorized, "unauthorized")
 		return
 	}
-    id, err := strconv.Atoi(c.Param("id"))
+	var room Room
+	c.BindJSON(&room)
+	db, err := r.S.Data.Bdd.Connect()
+	if err != nil {
+		return
+	}
+	defer db.Close()
+	eo := `SELECT creator_id FROM room WHERE id = ?`
+	errs := db.QueryRow(eo, room.Id).Scan(&room.CreatorId)
+	if errs != nil {
+		fmt.Println(err)
+	}
+	id, err := strconv.Atoi(e.UserId)
 	if err != nil {
 		c.JSON(400, gin.H{"status": "bad"})
 		return
 	}
-	if err := r.DeleteRoom(id); err != nil {
+	if room.CreatorId != id {
+		c.JSON(http.StatusUnauthorized, "unauthorized")
+		return
+	}
+	//NOTE: Run Delete Action
+	if err := r.DeleteRoom(room.Id); err != nil {
 		c.JSON(400, gin.H{"status": "bad"})
 		return
 	}
@@ -117,10 +137,24 @@ func TokenAuthMiddleware(c *gin.Context) {
 	c.Next()
 }
 
+//NOTE: Song handler add a song
+func (r *RoomUtils)SongHandler(c *gin.Context) {
+	var song Song
+	c.BindJSON(&song)
+	if err := r.AddSong(&song); err != nil {
+		c.JSON(400, gin.H{"status": "bad"})
+		return
+	}
+	c.JSON(200, gin.H{"status": "OK"})
+}
+
 //NOTE: ROUTE
 func (r *RoomUtils) WWW(s *server.Server) {
 	s.NewR("/room/add", "room", "POST", 1, r.S.MakeMe(r.RoomHandler))
 	s.NewR("/rooms", "rooms", "GET", 1, r.S.MakeMe(r.GetRoomsHandler))
 	s.NewR("/rooms/:id", "roombyid", "GET", 1, r.S.MakeMe(r.GetRoomHandler))
-	s.NewR("/rooms/delete, ", "delroombyid", "POST", 1, r.S.MakeMe(r.DelRoomHandler))
+	s.NewR("/rooms/delete", "delroombyid", "POST", 1, r.S.MakeMe(r.DelRoomHandler))
+
+	s.NewR("/song/add", "song", "POST", 1, r.S.MakeMe(r.SongHandler))
+
 }

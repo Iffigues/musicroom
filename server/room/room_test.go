@@ -3,6 +3,10 @@ package room
 import (
     "testing"
 	"github.com/iffigues/musicroom/servertest"
+
+	"net/http"
+    "net/http/httptest"
+	"io/ioutil"
 )
 
 func TestAddRoom(t *testing.T) {
@@ -49,3 +53,20 @@ func TestDeleteRoom(t *testing.T) {
 	s.AddHH(c)
 	go servertest.LanceServe(s)
 }
+
+//NOTE : Not working
+/*func TestAddRoomApi(t *testing.T) {
+
+    req := httptest.NewRequest(http.MethodGet, "/rooms/1", nil)
+    w := httptest.NewRecorder()
+    GetRoomHandler(w, req)
+    res := w.Result()
+    defer res.Body.Close()
+    data, err := ioutil.ReadAll(res.Body)
+    if err != nil {
+        t.Errorf("expected error to be nil got %v", err)
+    }
+    if string(data.Id) != 1 {
+        t.Errorf("expected 1 got %v", string(data.Id))
+    }
+}*/

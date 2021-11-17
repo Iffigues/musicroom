@@ -81,7 +81,7 @@ func (a *RoomUtils) GetRoom(r *Room) (err error){
 		return err
 	}
 	//NOTE : Get playlist Songs
-	/*rows, err := db.Query("SELECT id, name FROM song WHERE room_id = ?", r.Id)
+	rows, err := db.Query("SELECT id, name FROM song WHERE room_id = ?", r.Id)
 	if err != nil {
 		return err
 	}
@@ -94,7 +94,7 @@ func (a *RoomUtils) GetRoom(r *Room) (err error){
 		}
 		r.Song = append(r.Song, song)
 	}
-	if err = rows.Err(); err != nil {
+	/*if err = rows.Err(); err != nil {
 		return err
 	}*/
 	return nil
@@ -151,6 +151,23 @@ func (a *RoomUtils) DeleteRoom(rid int) (err error){
 
 //NOTE: Song methods
 
+//NOTE: Add a new song to BDD
+func (a *RoomUtils) AddSong(s *Song) (err error){
+	db, err := a.S.Data.Bdd.Connect()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	stmt, errs := db.Prepare("INSERT INTO song (name, room_id) VALUES(?, ?)")
+	if errs != nil {
+		return errs
+	}
+	_, err = stmt.Exec(s.Name, s.RoomId)
+	if err != nil {
+		return err
+	}
+	return nil
+}
 
 
 
