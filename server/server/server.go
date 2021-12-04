@@ -12,6 +12,7 @@ import (
 	"os"
 	"io"
 	"sync"
+	"fmt"
 	"github.com/gin-contrib/sessions"
 
 	"github.com/gin-contrib/sessions/cookie"
@@ -32,6 +33,11 @@ type HH interface {
 }
 
 
+type Mumu struct {
+	Mu sync.Mutex
+	Wg sync.WaitGroup
+}
+
 /*
 	Data structure contain all configuration and tool for the server and plugin
 	Store: session
@@ -44,7 +50,7 @@ type Data struct {
 	Bdd  *pk.Pk
 	Conf  *config.Conf
 	Api map[string]*api.Config
-	Lock map[int]sync.Mutex
+	Lock map[int]*Mumu
 }
 
 /*
@@ -152,7 +158,7 @@ func NewServer(i *config.Conf) (a *Server) {
 			Bdd: pk.NewPk(*i),
 			Conf:  i,
 			Api: make(map[string]*api.Config),
-			Lock: make(map[int]sync.Mutex),
+			Lock: make(map[int]*Mumu),
 		},
 		Router: router,
 		Handle: make(map[string]*Handle),
@@ -160,6 +166,27 @@ func NewServer(i *config.Conf) (a *Server) {
 	router.Use(sessions.Sessions("mysession", a.Data.Store))
 	a.FourTwo()
 	return
+}
+
+func (r *Server) AddLock(i int) (err error) {
+	if _, ok := r.Data.Lock[i]; ok {
+		return fmt.Errorf("already exists")
+	}
+	var mu  sync.Mutex
+	var wg sync.WaitGroup
+	r.Data.Lock[i] = &Mumu{
+		Mu: mu,
+		Wg: wg,
+	}
+	return nil
+}
+
+func (r *Server) DelLock(i int) (err error) {
+	if _, ok := r.Data.Lock[i]; !ok {
+		return fmt.Errorf("don't exists")
+	}
+	delete(r.Data.Lock, i)
+	return nil
 }
 
 func (r *Server) NewR(route, key string, method string,i int, handler []gin.HandlerFunc) {
