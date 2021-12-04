@@ -34,7 +34,7 @@ type HH interface {
 
 
 type Mumu struct {
-	Mu sync.Mutex
+	Mu sync.RWMutex
 	Wg sync.WaitGroup
 }
 
@@ -172,7 +172,7 @@ func (r *Server) AddLock(i int) (err error) {
 	if _, ok := r.Data.Lock[i]; ok {
 		return fmt.Errorf("already exists")
 	}
-	var mu  sync.Mutex
+	var mu  sync.RWMutex
 	var wg sync.WaitGroup
 	r.Data.Lock[i] = &Mumu{
 		Mu: mu,
