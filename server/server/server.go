@@ -11,7 +11,8 @@ import (
 	"github.com/iffigues/musicroom/api"
 	"os"
 	"io"
-	  "github.com/gin-contrib/sessions"
+	"sync"
+	"github.com/gin-contrib/sessions"
 
 	"github.com/gin-contrib/sessions/cookie"
 )
@@ -43,6 +44,7 @@ type Data struct {
 	Bdd  *pk.Pk
 	Conf  *config.Conf
 	Api map[string]*api.Config
+	Lock map[string]sync.Mutex
 }
 
 /*
@@ -150,6 +152,7 @@ func NewServer(i *config.Conf) (a *Server) {
 			Bdd: pk.NewPk(*i),
 			Conf:  i,
 			Api: make(map[string]*api.Config),
+			Lock: make(map[string]sync.Mutex),
 		},
 		Router: router,
 		Handle: make(map[string]*Handle),
