@@ -8,6 +8,7 @@ import (
 
 	"net/http"
 	"strconv"
+	"fmt"
 
 )
 
@@ -24,19 +25,25 @@ type RoomUtils struct {
 	S *server.Server
 }
 
+
 type Room struct {
 	Id int `json:"id"`
 	Name	string `json:"name"`
 	CreatorId	int `json:"creator_id"`
 	Private bool `json:"private"`
+	//Invite []int `json:"invite"`
 	Song []Song `json:"song"`
 	Playlist string `json:"playlist"`
-	Position string `json:"current_position"`
-	
+	Position int `json:"current_position"`
+	PlaylistType int `json:"playlist_type"`
+
 }
+
+
 
 type Song struct {
 	Id int `json:"id"`
+	TrackId	string   `json:"trackid"`
 	RoomId int `json:"roomid"`
 	Name	string `json:"name"`
 	Author	string `json:"author"`
@@ -49,6 +56,7 @@ type MoveSong struct {
 	SongId string `json:"song_id"`
 	Position int `json:"position"`
 }
+
 
 //NOTE: Create table in bdd
 func NewRoom(s *server.Server) (r *RoomUtils) {
@@ -73,31 +81,20 @@ func (r *RoomUtils)RoomHandler(c *gin.Context) {
 //NOTE: Api handler get all rooms
 func (r *RoomUtils)GetRoomsHandler(c *gin.Context) {
 	var rooms []Room
-	/*e, err := user.ExtractTokenMetadata(c.Request)
+	e, err := user.ExtractTokenMetadata(c.Request)
 	if err != nil {
 		return
-	}*/
-	/*
-	if err := r.GetAllPublicRoom(&rooms); err != nil {
-		c.JSON(400, gin.H{"status": "bad"})
-		return
 	}
-	if err := r.GetAllMyRoom(&rooms); err != nil {
-		c.JSON(400, gin.H{"status": "bad"})
-		return
-	}
-	if err := r.GetAllPublicRoom(&rooms); err != nil {
-		c.JSON(400, gin.H{"status": "bad"})
-		return
-	}*/
+
 	db, err := r.S.Data.Bdd.Connect()
 	if err != nil {
 		c.JSON(400, gin.H{"status": "badbdd"})
 		return
 	}
 	defer db.Close()
-	//NOTE : Select all public room AND all user's rooms
-	rows, err := db.Query("SELECT name, creator_id From room WHERE private = false OR creator_id = (SELECT id FROM user WHERE uuid = ?)", "testkey") //e.UserId
+	//NOTE : Select all public room AND all user's rooms AND if Invited room
+
+	rows, err := db.Query("SELECT id, name, private, creator_id From room WHERE private = false OR creator_id = (SELECT id FROM user WHERE uuid = ?) OR id = (SELECT room_id FROM invite WHERE user_id = (SELECT id FROM user WHERE uuid = ?))", e.UserId, e.UserId) //e.UserId
 
 	if err != nil {
 		c.JSON(400, gin.H{"status": "badrequest"})
@@ -107,7 +104,7 @@ func (r *RoomUtils)GetRoomsHandler(c *gin.Context) {
 
 	for rows.Next() {
 		var room Room
-		if err := rows.Scan(&room.Name, &room.CreatorId); err != nil {
+		if err := rows.Scan(&room.Id, &room.Name, &room.Private, &room.CreatorId); err != nil {
 			c.JSON(400, gin.H{"status": "badscan"})
 			return
 		}
@@ -124,6 +121,7 @@ func (r *RoomUtils)GetRoomsHandler(c *gin.Context) {
 
 //NOTE: Api handler get room by id
 func (r *RoomUtils)GetRoomHandler(c *gin.Context) {
+	
     id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(400, gin.H{"status": "bad"})
@@ -132,6 +130,8 @@ func (r *RoomUtils)GetRoomHandler(c *gin.Context) {
 	var room Room
 	room.Id = id
 	if err := r.GetRoom(&room); err != nil {
+		fmt.Println(err)
+
 		c.JSON(400, gin.H{"status": "bad"})
 		return
 	}
@@ -171,7 +171,7 @@ func (r *RoomUtils)DelRoomHandler(c *gin.Context) {
 	eo = `DELETE FROM room WHERE id = ? AND creator_id = (SELECT id FROM user WHERE uuid = ?)`
 	_, errs = db.Exec(eo, room.Id, e.UserId)
 	//NOTE: Test Locale
-	//_, errs = db.Exec(eo, room.Id, "testkey")
+	//_, errs = db.Exec(eo, room.Id, "doublekey")
 	if errs != nil {
 		c.JSON(400, gin.H{"status": "bad"})
 	}
@@ -195,7 +195,7 @@ func (r *RoomUtils)SongHandler(c *gin.Context) {
 	var song Song
 	c.BindJSON(&song)
 	if err := r.AddSong(&song); err != nil {
-		c.JSON(400, gin.H{"status": "bad"})
+			c.JSON(400, gin.H{"status": err.Error() })
 		return
 	}
 	c.JSON(200, gin.H{"status": "OK"})
@@ -214,16 +214,26 @@ func (r *RoomUtils)MoveSongHandler(c *gin.Context) {
 
 //NOTE: ROUTE
 func (r *RoomUtils) WWW(s *server.Server) {
-	s.NewR("/rooms", "rooms", "GET", 1, r.S.MakeMe(r.GetRoomsHandler))
-	s.NewR("/rooms/:id", "roombyid", "GET", 1, r.S.MakeMe(r.GetRoomHandler))
-	s.NewR("/rooms/add", "room", "POST", 1, r.S.MakeMe(r.RoomHandler))
-	s.NewR("/rooms/delete", "delroombyid", "POST", 1, r.S.MakeMe(r.DelRoomHandler))
-	//s.NewR("/rooms/edit", "editroombyid", "POST", 1, r.S.MakeMe(r.EditRoomHandler)) 
+	s.NewR("/room", "rooms", "GET", 1, r.S.MakeMe(r.GetRoomsHandler))
+	s.NewR("/room/:id", "roombyid", "GET", 1, r.S.MakeMe(r.GetRoomHandler))
+	s.NewR("/room/add", "room", "POST", 1, r.S.MakeMe(r.RoomHandler))
+	s.NewR("/room/delete", "delroombyid", "POST", 1, r.S.MakeMe(r.DelRoomHandler))
+	//s.NewR("/rooms/edit", "editroombyid", "POST", 1, r.S.MakeMe(r.EditRoomHandler))
+
+	s.NewR("/room/invite/add", "ia", "POST", 1, r.S.MakeMe(r.AddInvite))
+	s.NewR("/room/invite/:room", "il", "GET", 1 , r.S.MakeMe(r.ShowInvite))
+	s.NewR("/room/invite/delete", "id", "POST", 1, r.S.MakeMe(r.DelInvite))
+
+	s.NewR("/room/vote", "vote", "POST", 1, r.S.MakeMe(r.AddVote)) 
+	s.NewR("/room/vote/:song", "vote", "GET", 1, r.S.MakeMe(r.GetRanking)) 
+
+
+
 
 	//s.NewR("/rooms/song", "song", "GET", 1, r.S.MakeMe(r.GetSongsHandler))
 	//s.NewR("/rooms/song/:id", "songbyid", "GET", 1, r.S.MakeMe(r.GetSongHandler))
-	s.NewR("/rooms/song/add", "song", "POST", 1, r.S.MakeMe(r.SongHandler))
-	s.NewR("/rooms/song/move", "movesong", "POST", 1, r.S.MakeMe(r.MoveSongHandler))
+	s.NewR("/room/song/add", "song", "POST", 1, r.S.MakeMe(r.SongHandler))
+	s.NewR("/room/song/move", "movesong", "POST", 1, r.S.MakeMe(r.MoveSongHandler))
 	//s.NewR("/rooms/song/remove", "removesong", "POST", 1, r.S.MakeMe(r.RemoveSongHandler))
 
 }
