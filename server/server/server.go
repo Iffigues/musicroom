@@ -7,6 +7,7 @@ import (
 	"strings"
 	"github.com/iffigues/musicroom/config"
 	"github.com/iffigues/musicroom/pk"
+	"github.com/iffigues/musicroom/ws"
 	"github.com/gin-gonic/gin"
 	"github.com/iffigues/musicroom/api"
 	"os"
@@ -14,7 +15,7 @@ import (
 	"sync"
 	"fmt"
 	"github.com/gin-contrib/sessions"
-
+	"github.com/iffigues/musicroom/worker"
 	"github.com/gin-contrib/sessions/cookie"
 )
 
@@ -51,6 +52,8 @@ type Data struct {
 	Conf  *config.Conf
 	Api map[string]*api.Config
 	Lock map[int]*Mumu
+	Worker *worker.Worker
+	Ws  *ws.Channel
 }
 
 /*
@@ -159,6 +162,8 @@ func NewServer(i *config.Conf) (a *Server) {
 			Conf:  i,
 			Api: make(map[string]*api.Config),
 			Lock: make(map[int]*Mumu),
+			Worker: worker.NewWorkers(10),
+			Ws: ws.NewChannel(),
 		},
 		Router: router,
 		Handle: make(map[string]*Handle),
@@ -218,6 +223,7 @@ func UserHandler(c *gin.Context) {
 
 func (g *Server) Servers() (srv *http.Server) {
 	g.StartHH()
+	g.Mm()
 	for _, h := range g.Handle {
 		if h.Method == "GET" {
 			g.Router.GET(h.Route, h.Handle...)
@@ -230,4 +236,8 @@ func (g *Server) Servers() (srv *http.Server) {
 		Addr:    g.Data.Conf.GetValue("http","socket").(string),
 		Handler: g.Router,
 	}
+}
+
+func (g *Server) Mm() {
+	g.Data.Ws.NewChan("zzz")
 }

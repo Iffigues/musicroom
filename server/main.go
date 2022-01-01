@@ -70,6 +70,8 @@ func serves() {
 	server.AddPk(ii)
 	user := user.NewUser(server)
 	server.AddHH(user)
+	w := server.NewWw(server)
+	server.AddHH(w)
 	serve := server.Servers()
 	err = serve.ListenAndServe()
 	if err != nil {

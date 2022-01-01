@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"errors"
 	"time"
+	"fmt"
 	"github.com/gorilla/websocket"
 )
 
@@ -95,37 +96,54 @@ func NewChannel() (c *Channel) {
 }
 
 func (c *Channel)NewChan(a string) (err error) {
+	c.RLock()
 	if _, ok := c.Chan[a]; ok {
+		c.RUnlock()
 		return errors.New("chan already exists")
 	}
-	var e *Mess
+	c.RUnlock()
+	e := &Mess{}
+	fmt.Println(e)
 	e.Hub = NewHub()
-	go e.Hub.run()
+	fmt.Println(e)
+	e.Close = make(chan bool)
+	go e.Hub.run(e)
+	c.Lock()
+	defer c.Unlock()
 	c.Chan[a] = e;
 	return
 }
 
 
+func (c *Channel) Close(a string) {
+	c.RLock()
+	defer c.RUnlock()
+	if val, ok := c.Chan[a]; ok {
+		val.Close <- true
+		delete(c.Chan, a)
+	}
+}
+
 func (c *Channel) AddClient(a string, w http.ResponseWriter, r *http.Request) (err error){
 	if a, ok := c.Chan[a]; ok {
-	var upgrader = websocket.Upgrader{
-		ReadBufferSize:  1024,
-		WriteBufferSize: 1024,
-	}
+		var upgrader = websocket.Upgrader{
+			ReadBufferSize:  1024,
+			WriteBufferSize: 1024,
+		}
 
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		return err
-	}
+		conn, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			return err
+		}
 
-	client := &Client{
-		conn: conn,
-		send: make(chan []byte, 256),
-	}
-	a.Hub.register <- client
-	go client.writePump()
-	go client.readPump()
-	return nil
+		client := &Client{
+			conn: conn,
+			send: make(chan []byte, 256),
+		}
+		a.Hub.register <- client
+		go client.writePump()
+		go client.readPump()
+		return nil
 	}
 	return errors.New("don't exists")
 }

@@ -3,9 +3,11 @@ package ws
 import (
 	"net/http"
 	"github.com/gorilla/websocket"
+	"sync"
 )
 
 type Channel struct {
+	sync.RWMutex
 	Chan map[string]*Mess
 }
 
@@ -13,6 +15,7 @@ type Channel struct {
 type Mess struct {
 	Hub *Hub
 	Client []*Client
+	Close chan bool
 }
 
 type Hub struct {
@@ -39,7 +42,7 @@ func newHub() *Hub {
 	}
 }
 
-func (h *Hub) run() {
+func (h *Hub) run(c *Mess) {
 	for {
 		select {
 		case client := <-h.register:
@@ -57,6 +60,10 @@ func (h *Hub) run() {
 					close(client.send)
 					delete(h.clients, client)
 				}
+			}
+		case closes := <-c.Close:
+			if closes == true {
+				return
 			}
 		}
 	}
