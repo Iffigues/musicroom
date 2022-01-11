@@ -30,7 +30,7 @@ type Room struct {
 	Id int `json:"id"`
 	Name	string `json:"name"`
 	CreatorId	int `json:"creator_id"`
-	Private bool `json:"private"`
+	Private bool `json:"is_private"`
 	//Invite []int `json:"invite"`
 	Song []Song `json:"song"`
 	Playlist string `json:"playlist"`
@@ -83,6 +83,7 @@ func (r *RoomUtils)GetRoomsHandler(c *gin.Context) {
 	var rooms []Room
 	e, err := user.ExtractTokenMetadata(c.Request)
 	if err != nil {
+		c.JSON(400, gin.H{"status": "badUser"})
 		return
 	}
 

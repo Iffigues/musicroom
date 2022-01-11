@@ -2,6 +2,8 @@ package room
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/iffigues/musicroom/user"
+
 
 	"net/http"
 	"strconv"
@@ -14,7 +16,7 @@ type Vote struct {
 }
 
 func (r *RoomUtils) AddVote(c *gin.Context) {
-	e, ee :=ExtractTokenMetadata(c.Request)
+	e, ee := user.ExtractTokenMetadata(c.Request)
 	if ee != nil {
 		return
 	}
@@ -61,7 +63,7 @@ func (r *RoomUtils) AddVote(c *gin.Context) {
 }
 
 func (r *RoomUtils) GetRanking(c *gin.Context) {
-	e, ee :=ExtractTokenMetadata(c.Request)
+	e, ee := user.ExtractTokenMetadata(c.Request)
 	if ee != nil {
 		return
 	}

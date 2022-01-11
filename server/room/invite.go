@@ -2,6 +2,8 @@ package room
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/iffigues/musicroom/user"
+
 
 	"net/http"
 	"strconv"
@@ -14,7 +16,7 @@ type Invite struct {
 }
 
 func (r *RoomUtils) AddInvite(c *gin.Context) {
-	e, ee :=ExtractTokenMetadata(c.Request)
+	e, ee := user.ExtractTokenMetadata(c.Request)
 	if ee != nil {
 		return
 	}
@@ -63,7 +65,7 @@ func (r *RoomUtils) ShowInvite(c *gin.Context) {
 		c.JSON(400, gin.H{"status": "bad"})
 		return
 	}
-	e, err := ExtractTokenMetadata(c.Request)
+	e, err := user.ExtractTokenMetadata(c.Request)
 	if err != nil {
 		return
 	}
@@ -101,7 +103,7 @@ func (r *RoomUtils) ShowInvite(c *gin.Context) {
 }
 
 func (r *RoomUtils) DelInvite(c *gin.Context) {
-	e, err := ExtractTokenMetadata(c.Request)
+	e, err := user.ExtractTokenMetadata(c.Request)
 	if err != nil {
 		return
 	}
